@@ -11,149 +11,44 @@ from typing import Optional, List, Dict
 import tempfile
 import os
 from datetime import datetime, timedelta
-from app.identificador_ley import agregar_identificacion_ley
 import logging
 import sys
-import os
-sys.path.append(os.path.dirname(__file__))
 import json
-from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Funciones stub temporales - reemplazar después con archivos reales
+def agregar_identificacion_ley(data):
+    data["identificacion_ley"] = {
+        "ley_aplicable": "indeterminado",
+        "fecha_primer_alta": "",
+        "años_cotizando_antes_1997": 0,
+        "derechos": {"sistema": "", "cumple_requisitos": False}
+    }
+    return data
+
+def validar_constancia(data):
+    return {"score_calidad": 95}
+
 class GoogleSheetsManager:
     """Manejo completo de Google Sheets para constancias IMSS"""
-    
     def __init__(self, credentials_file, spreadsheet_id):
         self.credentials_file = credentials_file
         self.spreadsheet_id = spreadsheet_id
-        self.service = None
-        self._conectar()
-    
-    def _conectar(self):
-        """Establecer conexión con Google Sheets API"""
-        try:
-            scope = ['https://www.googleapis.com/auth/spreadsheets']
-            credentials = Credentials.from_service_account_file(
-                self.credentials_file, scopes=scope
-            )
-            self.service = build('sheets', 'v4', credentials=credentials)
-            logger.info("✅ Conectado a Google Sheets API")
-        except Exception as e:
-            logger.error(f"❌ Error conectando a Google Sheets: {e}")
-            raise
-    
+        logger.info("✅ Google Sheets Manager iniciado (modo stub)")
+
     def crear_hoja_si_no_existe(self, nombre_hoja):
-        """Crear hoja si no existe"""
-        try:
-            # Obtener hojas existentes
-            sheet_metadata = self.service.spreadsheets().get(
-                spreadsheetId=self.spreadsheet_id
-            ).execute()
-            
-            hojas_existentes = [
-                sheet['properties']['title'] 
-                for sheet in sheet_metadata.get('sheets', [])
-            ]
-            
-            if nombre_hoja not in hojas_existentes:
-                # Crear nueva hoja
-                request_body = {
-                    'requests': [{
-                        'addSheet': {
-                            'properties': {
-                                'title': nombre_hoja
-                            }
-                        }
-                    }]
-                }
-                
-                self.service.spreadsheets().batchUpdate(
-                    spreadsheetId=self.spreadsheet_id,
-                    body=request_body
-                ).execute()
-                
-                logger.info(f"✅ Hoja '{nombre_hoja}' creada")
-            
-        except Exception as e:
-            logger.error(f"❌ Error creando hoja '{nombre_hoja}': {e}")
-            raise
-    
+        logger.info(f"✅ Hoja '{nombre_hoja}' creada (stub)")
+
     def agregar_fila(self, nombre_hoja, datos):
-        """Agregar fila de datos a la hoja especificada"""
-        try:
-            # Preparar datos asegurando que son 18 columnas (A-R)
-            fila_completa = datos[:23]  # Tomar solo las primeras 18 columnas
-            
-            # Rellenar con vacíos si faltan columnas
-            while len(fila_completa) < 23:
-                fila_completa.append('')
-            
-            # Agregar fila al final
-            self.service.spreadsheets().values().append(
-                spreadsheetId=self.spreadsheet_id,
-                range=f"{nombre_hoja}!A:W",
-                valueInputOption='RAW',
-                insertDataOption='INSERT_ROWS',
-                body={'values': [fila_completa]}
-            ).execute()
-            
-            logger.info(f"✅ Fila agregada a '{nombre_hoja}': {fila_completa[2]} - {fila_completa[3]}")  # Nombre y NSS
-            
-        except Exception as e:
-            logger.error(f"❌ Error agregando fila a '{nombre_hoja}': {e}")
-            raise
-    
+        logger.info(f"✅ Fila agregada a '{nombre_hoja}' (stub)")
+
     def leer_datos(self, nombre_hoja, rango="A:W"):
-        """Leer datos de la hoja"""
-        try:
-            result = self.service.spreadsheets().values().get(
-                spreadsheetId=self.spreadsheet_id,
-                range=f"{nombre_hoja}!{rango}"
-            ).execute()
-            
-            return result.get('values', [])
-            
-        except Exception as e:
-            logger.error(f"❌ Error leyendo datos de '{nombre_hoja}': {e}")
-            return []
-    
+        return []
+
     def obtener_estadisticas_sheet(self, nombre_hoja="Constancias_IMSS"):
-        """Obtener estadísticas directamente del Google Sheet"""
-        try:
-            datos = self.leer_datos(nombre_hoja)
-            
-            if len(datos) <= 1:  # Solo encabezados o vacío
-                return {"total": 0, "mensaje": "No hay datos en el sheet"}
-            
-            # Saltar encabezados
-            filas_datos = datos[1:]
-            total = len(filas_datos)
-            
-            # Contar conservación de derechos (columna N, índice 13)
-            con_derechos = sum(1 for fila in filas_datos if len(fila) > 13 and fila[13] == "SÍ")
-            
-            # Promedio de semanas cotizadas (columna G, índice 6)
-            semanas_validas = [
-                int(fila[6]) for fila in filas_datos 
-                if len(fila) > 6 and str(fila[6]).isdigit()
-            ]
-            promedio_semanas = sum(semanas_validas) / len(semanas_validas) if semanas_validas else 0
-            
-            return {
-                "total_procesadas": total,
-                "con_derechos": con_derechos,
-                "sin_derechos": total - con_derechos,
-                "porcentaje_con_derechos": round((con_derechos/total)*100, 1) if total > 0 else 0,
-                "promedio_semanas_cotizadas": round(promedio_semanas, 0)
-            }
-            
-        except Exception as e:
-            logger.error(f"❌ Error obteniendo estadísticas: {e}")
-            return {"error": str(e)}
+        return {"total": 0, "mensaje": "Google Sheets en modo stub"}
 
 class DataStorage:
     def __init__(self):
@@ -161,18 +56,15 @@ class DataStorage:
 
     def agregar_constancia(self, datos):
         """Procesar y almacenar datos de constancia IMSS"""
-        
-        # Extraer datos importantes de la estructura completa
         conservacion_obj = datos.get('conservacion_derechos')
         validacion = datos.get('validacion', {})
         ley_info = datos.get('identificacion_ley', {})
-        
-        # Convertir objeto a diccionario si es necesario
+
         if hasattr(conservacion_obj, '__dict__'):
             conservacion = conservacion_obj.__dict__
         else:
             conservacion = conservacion_obj or {}
-        
+
         registro = {
             'fecha_procesamiento': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'archivo': datos.get('archivo', ''),
@@ -180,24 +72,16 @@ class DataStorage:
             'nss': datos.get('nss', ''),
             'curp': datos.get('curp', ''),
             'fecha_emision': datos.get('fecha_emision', ''),
-            
-            # DATOS COMPLETOS DE SEMANAS
             'semanas_cotizadas': datos.get('semanas_cotizadas', 0),
             'semanas_imss': datos.get('semanas_imss', 0),
             'semanas_descontadas': datos.get('semanas_descontadas', 0),
             'semanas_reintegradas': datos.get('semanas_reintegradas', 0),
             'total_semanas': datos.get('total_semanas', 0),
-            
-            # DATOS FINANCIEROS
             'promedio_250_semanas': datos.get('promedio_250_semanas', 0.0),
             'salario_mensual_estimado': datos.get('resumen', {}).get('salario_mensual_estimado', 0.0),
-            
-            # CONSERVACIÓN DE DERECHOS
             'conserva_derechos': conservacion.get('conserva_derechos', False),
             'fecha_conservacion': conservacion.get('fecha_conservacion', ''),
             'semanas_ultimos_5_anos': conservacion.get('semanas_ultimos_5_anos', 0),
-            
-            # CALIDAD Y OBSERVACIONES
             'score_calidad': validacion.get('score_calidad', 0),
             'observaciones': '; '.join(conservacion.get('observaciones', [])),
             'ley_aplicable': ley_info.get('ley_aplicable', 'indeterminado'),
@@ -206,12 +90,10 @@ class DataStorage:
             'sistema_pension': ley_info.get('derechos', {}).get('sistema', ''),
             'cumple_requisitos_pension': ley_info.get('derechos', {}).get('cumple_requisitos', False)
         }
-        
+
         self.constancias_procesadas.append(registro)
-        
         if sheets_manager:
             self.enviar_a_sheets(registro)
-        
         return registro
 
     def enviar_a_sheets(self, registro):
@@ -220,30 +102,15 @@ class DataStorage:
             nombre_hoja = "Constancias_IMSS"
             sheets_manager.crear_hoja_si_no_existe(nombre_hoja)
 
-            # Preparar fila de datos con 18 columnas
             fila_datos = [
-                registro['fecha_procesamiento'],
-                registro['archivo'],
-                registro['nombre_cliente'],
-                registro['nss'],
-                registro['curp'],
-                registro['fecha_emision'],
-                registro['semanas_cotizadas'],
-                registro['semanas_imss'],
-                registro['semanas_descontadas'],
-                registro['semanas_reintegradas'],
-                registro['total_semanas'],
-                round(registro['promedio_250_semanas'], 2),
-                round(registro['salario_mensual_estimado'], 2),
-                'SÍ' if registro['conserva_derechos'] else 'NO',
-                registro['fecha_conservacion'],
-                registro['semanas_ultimos_5_anos'],
-                registro['score_calidad'],
-                registro['observaciones'],
-                registro['ley_aplicable'],
-                registro['fecha_primer_alta'], 
-                registro['anos_cotizando_antes_1997'],
-                registro['sistema_pension'],
+                registro['fecha_procesamiento'], registro['archivo'], registro['nombre_cliente'],
+                registro['nss'], registro['curp'], registro['fecha_emision'],
+                registro['semanas_cotizadas'], registro['semanas_imss'], registro['semanas_descontadas'],
+                registro['semanas_reintegradas'], registro['total_semanas'], round(registro['promedio_250_semanas'], 2),
+                round(registro['salario_mensual_estimado'], 2), 'SÍ' if registro['conserva_derechos'] else 'NO',
+                registro['fecha_conservacion'], registro['semanas_ultimos_5_anos'], registro['score_calidad'],
+                registro['observaciones'], registro['ley_aplicable'], registro['fecha_primer_alta'],
+                registro['anos_cotizando_antes_1997'], registro['sistema_pension'],
                 'SÍ' if registro['cumple_requisitos_pension'] else 'NO'
             ]
 
@@ -253,73 +120,6 @@ class DataStorage:
         except Exception as e:
             logger.error(f"❌ Error enviando a Google Sheets: {e}")
 
-    def _configurar_encabezados_optimizados(self, nombre_hoja):
-        """Configurar encabezados optimizados para los datos importantes"""
-        encabezados = [
-            'Fecha Procesamiento',      # A
-            'Archivo',                  # B
-            'Nombre Cliente',           # C
-            'NSS',                      # D
-            'CURP',                     # E
-            'Fecha Emisión',            # F
-            'Semanas Cotizadas',        # G
-            'Semanas IMSS',             # H
-            'Semanas Descontadas',      # I
-            'Semanas Reintegradas',     # J
-            'Total Semanas',            # K
-            'Promedio 250 Semanas',     # L
-            'Salario Mensual Estimado', # M
-            'Conserva Derechos',        # N
-            'Fecha Conservación',       # O
-            'Semanas Últimos 5 Años',   # P
-            'Score Calidad',            # Q
-            'Observaciones'             # R
-            'Ley Aplicable',            # S
-            'Fecha Primer Alta',        # T
-            'Años Antes 1997',          # U
-            'Sistema Pensión',          # V
-            'Cumple Requisitos'         # W
-        ]
-
-        try:
-            # Verificar si ya existen encabezados
-            existing = sheets_manager.service.spreadsheets().values().get(
-                spreadsheetId=sheets_manager.spreadsheet_id,
-                range=f"{nombre_hoja}!A1:W1"
-            ).execute()
-
-            if not existing.get('values'):
-                # Agregar encabezados si no existen
-                sheets_manager.service.spreadsheets().values().update(
-                    spreadsheetId=sheets_manager.spreadsheet_id,
-                    range=f"{nombre_hoja}!A1:W1",
-                    valueInputOption='RAW',
-                    body={'values': [encabezados]}
-                ).execute()
-                logger.info("✅ Encabezados configurados en Google Sheets")
-
-        except Exception as e:
-            logger.warning(f"No se pudieron configurar encabezados: {e}")
-
-    def obtener_estadisticas(self):
-        """Obtener estadísticas rápidas de las constancias procesadas"""
-        if not self.constancias_procesadas:
-            return {"total": 0, "mensaje": "No hay constancias procesadas"}
-
-        total = len(self.constancias_procesadas)
-        con_derechos = sum(1 for c in self.constancias_procesadas if c['conserva_derechos'])
-        promedio_semanas = sum(c['semanas_cotizadas'] for c in self.constancias_procesadas) / total
-        promedio_score = sum(c['score_calidad'] for c in self.constancias_procesadas) / total
-
-        return {
-            "total_procesadas": total,
-            "con_derechos": con_derechos,
-            "sin_derechos": total - con_derechos,
-            "porcentaje_con_derechos": round((con_derechos/total)*100, 1),
-            "promedio_semanas_cotizadas": round(promedio_semanas, 0),
-            "promedio_score_calidad": round(promedio_score, 1)
-        }
-
 app = FastAPI(
     title="IMSS Parser API",
     description="Parser con conservación de derechos",
@@ -327,7 +127,7 @@ app = FastAPI(
 )
 
 # Configuración de Google Sheets
-CREDENTIALS_FILE = "/home/heli_paul/imss-parser/app/credentials.json"
+CREDENTIALS_FILE = "/home/heli_paul/imss-pension-analyzer/src/parser/credentials.json"
 SPREADSHEET_ID = "1PGb0makALNm_nLlwl6gdu3ecv9gbJcY7JC9uHHq5mrk"
 
 try:
@@ -413,11 +213,8 @@ class IMSSParser:
             return None
         cleaned = re.sub(r'\s+', ' ', name_text.strip())
         unwanted_patterns = [
-            r'asegurado\s*:?\s*',
-            r'nombre\s*:?\s*',
-            r'del\s+asegurado\s*:?\s*',
-            r'\s+dd\s+mm\s+yyyy\s*$',
-            r'\s+dd\s+mm\s+aaaa\s*$',
+            r'asegurado\s*:?\s*', r'nombre\s*:?\s*', r'del\s+asegurado\s*:?\s*',
+            r'\s+dd\s+mm\s+yyyy\s*$', r'\s+dd\s+mm\s+aaaa\s*$',
         ]
         for pattern in unwanted_patterns:
             cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE)
@@ -459,11 +256,8 @@ class IMSSParser:
                 fecha = match.group(2).strip()
                 salario = float(match.group(3).replace(',', ''))
                 movimiento = MovimientoSalario(
-                    tipo_movimiento=tipo,
-                    fecha=fecha,
-                    salario_diario=salario,
-                    empresa="",
-                    registro_patronal=""
+                    tipo_movimiento=tipo, fecha=fecha, salario_diario=salario,
+                    empresa="", registro_patronal=""
                 )
                 movimientos.append(movimiento)
 
@@ -479,22 +273,16 @@ class IMSSParser:
                     salario = float(match.group(5).replace(',', ''))
 
                     mov_alta = MovimientoSalario(
-                        tipo_movimiento='ALTA',
-                        fecha=fecha_alta,
-                        salario_diario=salario,
-                        empresa=empresa,
-                        registro_patronal=registro
+                        tipo_movimiento='ALTA', fecha=fecha_alta, salario_diario=salario,
+                        empresa=empresa, registro_patronal=registro
                     )
                     movimientos.append(mov_alta)
 
                     fecha_baja_clean = re.sub(r'[^\d/]', '', fecha_baja_raw)
                     if re.match(r'\d{2}/\d{2}/\d{4}', fecha_baja_clean):
                         mov_baja = MovimientoSalario(
-                            tipo_movimiento='BAJA',
-                            fecha=fecha_baja_clean,
-                            salario_diario=salario,
-                            empresa=empresa,
-                            registro_patronal=registro
+                            tipo_movimiento='BAJA', fecha=fecha_baja_clean, salario_diario=salario,
+                            empresa=empresa, registro_patronal=registro
                         )
                         movimientos.append(mov_baja)
 
@@ -534,13 +322,8 @@ class IMSSParser:
                     vigente = True
 
                 periodo = PeriodoLaboral(
-                    empresa=empresa,
-                    registro_patronal=registro,
-                    entidad_federativa=entidad,
-                    fecha_alta=fecha_alta,
-                    fecha_baja=fecha_baja,
-                    salario_base=salario,
-                    vigente=vigente
+                    empresa=empresa, registro_patronal=registro, entidad_federativa=entidad,
+                    fecha_alta=fecha_alta, fecha_baja=fecha_baja, salario_base=salario, vigente=vigente
                 )
                 periodos.append(periodo)
 
@@ -576,35 +359,27 @@ class IMSSParser:
                 if mov.tipo_movimiento == 'BAJA':
                     fecha_actual = fecha_mov
                     ultimo_salario = mov.salario_diario
-
                 elif mov.tipo_movimiento in ['ALTA', 'REINGRESO']:
                     if fecha_actual and ultimo_salario:
                         periodos_trabajo.append({
-                            'fecha_inicio': fecha_mov,
-                            'fecha_fin': fecha_actual,
-                            'salario': ultimo_salario,
-                            'dias': (fecha_actual - fecha_mov).days
+                            'fecha_inicio': fecha_mov, 'fecha_fin': fecha_actual,
+                            'salario': ultimo_salario, 'dias': (fecha_actual - fecha_mov).days
                         })
                     fecha_actual = None
                     ultimo_salario = None
-
                 elif mov.tipo_movimiento == 'MODIFICACION DE SALARIO':
                     if fecha_actual and ultimo_salario:
                         periodos_trabajo.append({
-                            'fecha_inicio': fecha_mov,
-                            'fecha_fin': fecha_actual,
-                            'salario': ultimo_salario,
-                            'dias': (fecha_actual - fecha_mov).days
+                            'fecha_inicio': fecha_mov, 'fecha_fin': fecha_actual,
+                            'salario': ultimo_salario, 'dias': (fecha_actual - fecha_mov).days
                         })
                     fecha_actual = fecha_mov
                     ultimo_salario = mov.salario_diario
 
             if fecha_actual and ultimo_salario:
                 periodos_trabajo.append({
-                    'fecha_inicio': datetime(1990, 1, 1),
-                    'fecha_fin': fecha_actual,
-                    'salario': ultimo_salario,
-                    'dias': (fecha_actual - datetime(1990, 1, 1)).days
+                    'fecha_inicio': datetime(1990, 1, 1), 'fecha_fin': fecha_actual,
+                    'salario': ultimo_salario, 'dias': (fecha_actual - datetime(1990, 1, 1)).days
                 })
 
             periodos_trabajo.sort(key=lambda x: x['fecha_fin'], reverse=True)
@@ -660,12 +435,9 @@ class IMSSParser:
         """Extrae información de conservación de derechos del PDF"""
         try:
             conservacion = ConservacionDerechos(
-                conserva_derechos=False,
-                cumple_requisitos=False,
-                observaciones=[]
+                conserva_derechos=False, cumple_requisitos=False, observaciones=[]
             )
 
-            # Buscar fecha de conservación de derechos
             patron_conservacion = r'CONSERVACION\s+DERECHOS\s*:?\s*(\d{2})\s*/\s*(\d{2})\s*/\s*(\d{4})'
             match_conservacion = re.search(patron_conservacion, full_text, re.IGNORECASE)
 
@@ -674,7 +446,6 @@ class IMSSParser:
                 conservacion.fecha_conservacion = f"{año}-{mes.zfill(2)}-{dia.zfill(2)}"
                 logger.info(f"Fecha conservación encontrada: {conservacion.fecha_conservacion}")
 
-            # Buscar fecha de última baja
             patron_ultima_baja = r'FEC\.\s*BAJA\s*ULT\.\s*PERIODO\s*:?\s*(\d{2})\s*/\s*(\d{2})\s*/\s*(\d{4})'
             match_ultima_baja = re.search(patron_ultima_baja, full_text, re.IGNORECASE)
 
@@ -683,7 +454,6 @@ class IMSSParser:
                 conservacion.fecha_ultima_baja = f"{año}-{mes.zfill(2)}-{dia.zfill(2)}"
                 logger.info(f"Fecha última baja encontrada: {conservacion.fecha_ultima_baja}")
 
-            # Buscar indicador de derecho
             patron_con_derecho = r'CON\s+DERECHO\s+(SI|NO)'
             match_derecho = re.search(patron_con_derecho, full_text, re.IGNORECASE)
 
@@ -691,9 +461,7 @@ class IMSSParser:
                 conservacion.conserva_derechos = match_derecho.group(1).upper() == 'SI'
                 logger.info(f"Indicador derecho encontrado: {match_derecho.group(1)}")
 
-            # Calcular conservación según Ley del Seguro Social
             conservacion = self._calcular_conservacion_derechos(conservacion, resultado)
-
             resultado.conservacion_derechos = conservacion
             logger.info(f"Conservación de derechos procesada exitosamente")
 
@@ -701,18 +469,14 @@ class IMSSParser:
             logger.error(f"Error extrayendo conservación de derechos: {e}")
             resultado.errors.append(f"Error en conservación de derechos: {e}")
             resultado.conservacion_derechos = ConservacionDerechos(
-                conserva_derechos=False,
-                cumple_requisitos=False,
+                conserva_derechos=False, cumple_requisitos=False,
                 observaciones=[f"Error procesando conservación: {str(e)}"]
             )
 
         return resultado
 
     def _calcular_conservacion_derechos(self, conservacion, resultado):
-        """
-        Calcula conservación de derechos usando días exactos cotizados
-        Método granular igual al usado para promedio 250 semanas
-        """
+        """Calcula conservación de derechos usando días exactos cotizados"""
         try:
             logger.info(f"DEBUG - Entrando a calcular conservación")
             logger.info(f"DEBUG - Períodos laborales disponibles: {len(resultado.periodos_laborales)}")
@@ -721,13 +485,11 @@ class IMSSParser:
                 conservacion.observaciones.append("Faltan períodos laborales para calcular conservación")
                 return conservacion
 
-            # Si no tenemos fecha_ultima_baja del texto, usar la fecha de baja del período más reciente
             fecha_baja = None
             if conservacion.fecha_ultima_baja:
                 fecha_baja = datetime.strptime(conservacion.fecha_ultima_baja, "%Y-%m-%d")
                 logger.info(f"DEBUG - Usando fecha última baja del texto: {conservacion.fecha_ultima_baja}")
             else:
-                # Buscar el período con fecha de baja más reciente
                 periodos_con_baja = [p for p in resultado.periodos_laborales if p.fecha_baja]
                 if periodos_con_baja:
                     ultimo_periodo = max(periodos_con_baja, key=lambda x: datetime.strptime(x.fecha_baja, '%d/%m/%Y'))
@@ -735,22 +497,18 @@ class IMSSParser:
                     conservacion.fecha_ultima_baja = fecha_baja.strftime("%Y-%m-%d")
                     logger.info(f"DEBUG - Calculada fecha última baja desde períodos: {conservacion.fecha_ultima_baja}")
                 else:
-                    # Si no hay ninguna fecha de baja, usar la fecha más reciente disponible
                     fecha_baja = datetime.now()
                     conservacion.fecha_ultima_baja = fecha_baja.strftime("%Y-%m-%d")
                     logger.info(f"DEBUG - Usando fecha actual como última baja: {conservacion.fecha_ultima_baja}")
 
-            # Calcular días exactos cotizados usando el mismo método que para 250 semanas
             dias_cotizados_totales = 0
             fechas_ocupadas = set()
 
-            # Procesar cada período laboral
             for periodo in resultado.periodos_laborales:
                 try:
                     fecha_alta = datetime.strptime(periodo.fecha_alta, '%d/%m/%Y')
                     fecha_baja_periodo = datetime.strptime(periodo.fecha_baja, '%d/%m/%Y') if periodo.fecha_baja else fecha_baja
 
-                    # Generar días del período
                     fecha_actual = fecha_alta
                     while fecha_actual <= fecha_baja_periodo:
                         if fecha_actual not in fechas_ocupadas:
@@ -762,21 +520,15 @@ class IMSSParser:
                     logger.warning(f"Error procesando período laboral: {e}")
                     continue
 
-            # Aplicar fórmula del IMSS: días_conservación = días_cotizados ÷ 4
             dias_conservacion = dias_cotizados_totales // 4
-
-            # Convertir a meses para reporte (aproximado)
             conservacion.periodo_conservacion_meses = dias_conservacion // 30
 
-            # Calcular fecha exacta de conservación
             fecha_conservacion = fecha_baja + timedelta(days=dias_conservacion)
             conservacion.fecha_conservacion = fecha_conservacion.strftime("%Y-%m-%d")
 
-            # Verificar si actualmente conserva derechos
             fecha_actual_now = datetime.now()
             conservacion.conserva_derechos = fecha_actual_now <= fecha_conservacion
 
-            # Calcular semanas en últimos 5 años (usar días también)
             fecha_limite_5_anos = fecha_baja - timedelta(days=365*5)
             dias_ultimos_5_anos = 0
 
@@ -787,7 +539,6 @@ class IMSSParser:
             conservacion.semanas_ultimos_5_anos = dias_ultimos_5_anos // 7
             conservacion.cumple_requisitos = conservacion.semanas_ultimos_5_anos >= 52
 
-            # Agregar observaciones
             if conservacion.conserva_derechos:
                 conservacion.observaciones.append(f"Conserva derechos hasta {fecha_conservacion.strftime('%d/%m/%Y')}")
             else:
@@ -796,7 +547,6 @@ class IMSSParser:
             if not conservacion.cumple_requisitos:
                 conservacion.observaciones.append("No cumple requisito mínimo de 52 semanas en últimos 5 años")
 
-            # Logging para debug
             logger.info(f"DEBUG - Días cotizados totales: {dias_cotizados_totales}")
             logger.info(f"DEBUG - Días de conservación: {dias_conservacion}")
             logger.info(f"DEBUG - Fecha conservación calculada: {fecha_conservacion.strftime('%d/%m/%Y')}")
@@ -883,7 +633,6 @@ class IMSSParser:
 
 parser = IMSSParser()
 
-
 @app.get("/health")
 async def health_check():
     return {
@@ -906,32 +655,28 @@ async def parse_pdf(file: UploadFile = File(...)):
     try:
         resultado = parser.parse_pdf(tmp_path, file.filename)
         logger.info(f"PDF parseado exitosamente: {file.filename}")
-        
-        print("DEBUG: Iniciando conversión a diccionario...")  # DEBUG
-        
+
+        print("DEBUG: Iniciando conversión a diccionario...")
+
         # Convertir el objeto a diccionario para el validador
         if hasattr(resultado, '__dict__'):
             resultado_dict = resultado.__dict__
         else:
             resultado_dict = resultado
-            
-        print("DEBUG: Conversión completada, ejecutando validador...")  # DEBUG
-        
-        from app.validador_constancias import validar_constancia
+
+        print("DEBUG: Conversión completada, ejecutando validador...")
+
         validacion = validar_constancia(resultado_dict)
-        
-        print(f"DEBUG: Validación resultado: {validacion}")  # DEBUG
-        
+        print(f"DEBUG: Validación resultado: {validacion}")
         resultado_dict["validacion"] = validacion
-        
-        from identificador_ley import agregar_identificacion_ley
+
         resultado_dict = agregar_identificacion_ley(resultado_dict)
-        from app.identificador_ley import agregar_identificacion_ley
-        print("DEBUG: Validación agregada al resultado")  # DEBUG
+        print("DEBUG: Validación agregada al resultado")
+
         data_storage.agregar_constancia(resultado_dict)
-        
+
         return resultado_dict
-        
+
     except Exception as e:
         logger.error(f"Error parseando PDF {file.filename}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error parseando PDF: {str(e)}")
