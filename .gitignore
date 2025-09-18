@@ -4,3 +4,31 @@ __pycache__/
 .env
 *.log
 *.pdf
+
+# Archivos sensibles
+secrets/
+*.json
+!config/*.json.example
+
+# Respaldos y temporales  
+*.backup
+*.bak
+*.old
+*.save
+*.save.*
+*_backup.py
+main_backup.py
+
+# Archivos de prueba
+test_*.py
+*.txt
+!requirements.txt
+!README.txt
+
+# SSH keys
+ssh-copy-id*
+*.pub
+
+# Otros temporales
+resp.json
+todo_*.txt
