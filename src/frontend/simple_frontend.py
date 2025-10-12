@@ -33,11 +33,12 @@ async def home():
 async def upload(file: UploadFile = File(...)):
     async with httpx.AsyncClient(timeout=30) as client:
         files = {"file": (file.filename, await file.read(), "application/pdf")}
-        response = await client.post("http://localhost:8001/parse", files=files)
+        response = await client.post("http://localhost:8001/parse/historial/completo", files=files)
         return response.json()
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=3001)
+    uvicorn.run(app, host="0.0.0.0", port=3002)
+
 
 

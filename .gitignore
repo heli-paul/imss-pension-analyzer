@@ -32,3 +32,55 @@ ssh-copy-id*
 # Otros temporales
 resp.json
 todo_*.txt
+
+# Virtual environments
+.venv/
+.venv_new/
+venv/
+env/
+
+# Backups
+*.tar.gz
+*.zip
+backup_*
+
+# Database
+*.db
+*.sqlite3
+
+# Secrets
+.env
+.secret_key.tmp
+secrets/
+credentials.json
+
+# Build
+.next/
+node_modules/
+dist/
+
+# Virtual environments
+.venv/
+.venv_new/
+venv/
+env/
+
+# Backups
+*.tar.gz
+*.zip
+backup_*
+
+# Database
+*.db
+*.sqlite3
+
+# Secrets
+.env
+.secret_key.tmp
+secrets/
+credentials.json
+
+# Build
+.next/
+node_modules/
+dist/

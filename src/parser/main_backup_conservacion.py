@@ -9,16 +9,13 @@ import io
 import json
 import os
 import shutil
-import pdfplumber
-from modules.modulo2.historial_laboral import HistorialLaboralExtractor
+from modules.modulo3 import PensionProcessor, procesar_pension_imss
 from datetime import datetime
 from correccion_semanas import procesar_con_correcciones
 from correccion_semanas_final import aplicar_correccion_exacta
-from typing import Any, Dict, List, Optional
 import logging
 import gspread
 from google.oauth2.service_account import Credentials
-from calculo_250_semanas import calcular_promedio_250_desde_correccion
 
 # Importar nuestro módulo de extracción básica
 from modules.basic_extractor import extract_basic_data_from_pdf
@@ -95,7 +92,7 @@ class GoogleSheetsManager:
             raise
 
     def crear_hoja_si_no_existe(self, nombre_hoja):
-        """Crear hoja si no existe y configurar headers actualizados"""
+        """Crear hoja si no existe y configurar headers"""
         try:
             try:
                 worksheet = self.spreadsheet.worksheet(nombre_hoja)
@@ -106,29 +103,12 @@ class GoogleSheetsManager:
                 )
                 logger.info(f"✅ Hoja '{nombre_hoja}' creada")
 
-                # ✅ HEADERS ACTUALIZADOS - 21 COLUMNAS
+                # Headers solo para datos básicos (Módulo 1)
                 headers = [
-                    'Archivo',
-                    'Fecha Consulta',
-                    'NSS',
-                    'CURP',
-                    'Nombre',
-                    'Fecha de Nacimiento',
-                    'Edad',
-                    'Fecha de Emisión',
-                    'Ley Aplicable',
-                    'Fecha Primer Alta',
-                    'Semanas Cotizadas IMSS',
-                    'Semanas Descontadas',
-                    'Total de Semanas Cotizadas',
-                    'Semanas Reintegradas',
-                    'Fecha Última Baja',
-                    'Fecha de Vencimiento',
-                    'Salario Promedio Diario',
-                    'Tiene 250 Semanas Completas',
-                    'Total de Días Calculados',
-                    'Fecha Inicio Ventana',
-                    'Fecha Fin Ventana'
+                    'Fecha Procesamiento', 'Archivo', 'Nombre Cliente', 'NSS', 'CURP',
+                    'Fecha Emisión', 'Semanas Cotizadas', 'Semanas IMSS', 'Semanas Descontadas',
+                    'Semanas Reintegradas', 'Total Semanas', 'Ley Aplicable',
+                    'Fecha Primer Alta', 'Años Antes 1997', 'Errores'
                 ]
 
                 worksheet.append_row(headers)
@@ -164,110 +144,64 @@ class DataStorage:
     def __init__(self):
         self.constancias_procesadas = []
 
-    def agregar_constancia_completa(self, datos_completos):
-        """
-        Procesar y almacenar datos completos de constancia IMSS
-        Incluye: datos personales, conservación y promedio 250 semanas
-        """
+    def agregar_constancia_basica(self, datos):
+        """Procesar y almacenar datos básicos de constancia IMSS"""
+
+        registro = {
+            'fecha_procesamiento': datos.get('fecha_procesamiento', ''),
+            'archivo': datos.get('archivo', ''),
+            'nombre_cliente': datos.get('nombre', ''),
+            'nss': datos.get('nss', ''),
+            'curp': datos.get('curp', ''),
+            'fecha_emision': datos.get('fecha_emision', ''),
+            'semanas_cotizadas': datos.get('semanas_cotizadas', 0),
+            'semanas_imss': datos.get('semanas_imss', 0),
+            'semanas_descontadas': datos.get('semanas_descontadas', 0),
+            'semanas_reintegradas': datos.get('semanas_reintegradas', 0),
+            'total_semanas': datos.get('total_semanas', 0),
+            'ley_aplicable': datos.get('ley_aplicable', 'indeterminado'),
+            'fecha_primer_alta': datos.get('fecha_primer_alta', ''),
+            'anos_cotizando_antes_1997': datos.get('anos_cotizando_antes_1997', 0),
+            'errores': '; '.join(datos.get('errors', []))
+        }
+
+        self.constancias_procesadas.append(registro)
+
+        # Enviar a Google Sheets
+        if sheets_manager:
+            self.enviar_datos_basicos_a_sheets(registro)
+
+        return registro
+
+    def enviar_datos_basicos_a_sheets(self, registro):
+        """Enviar solo datos básicos a Google Sheets"""
         try:
-            # Extraer secciones
-            datos_personales = datos_completos.get('datos_personales', {})
-            datos_basicos = datos_completos.get('datos_basicos', {})
-            conservacion = datos_completos.get('conservacion_derechos', {})
-            promedio_250 = datos_completos.get('promedio_250_semanas', {})
-            semanas_desc = datos_completos.get('analisis_descuentos', {})
-
-            # Función helper para formatear fechas
-            def formatear_fecha(fecha_iso):
-                if not fecha_iso or fecha_iso == 'N/A':
-                    return ''
-                try:
-                    if 'T' in fecha_iso:
-                        fecha_iso = fecha_iso.split('T')[0]
-                    año, mes, dia = fecha_iso.split('-')
-                    return f"{dia}/{mes}/{año}"
-                except:
-                    return fecha_iso
-
-            registro = {
-                'archivo': datos_completos.get('archivo', ''),
-                'fecha_consulta': datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
-                'nss': datos_personales.get('nss', datos_basicos.get('nss', '')),
-                'curp': datos_personales.get('curp', datos_basicos.get('curp', '')),
-                'nombre': datos_personales.get('nombre', datos_basicos.get('nombre', '')),
-                'fecha_nacimiento': formatear_fecha(datos_personales.get('fecha_nacimiento', datos_basicos.get('fecha_nacimiento', ''))),
-                'edad': datos_personales.get('edad', datos_basicos.get('edad', '')),
-                'fecha_emision': formatear_fecha(datos_personales.get('fecha_emision', datos_basicos.get('fecha_emision', ''))),
-                'ley_aplicable': datos_personales.get('ley_aplicable', datos_basicos.get('ley_aplicable', '')),
-                'fecha_primer_alta': datos_personales.get('fecha_primer_alta', datos_basicos.get('fecha_primer_alta', '')),
-            
-                # Semanas
-                'semanas_cotizadas_imss': semanas_desc.get('semanas_cotizadas_imss', datos_basicos.get('semanas_cotizadas_imss', 0)),
-                'semanas_descontadas': semanas_desc.get('semanas_descontadas', datos_basicos.get('semanas_descontadas', 0)),
-                'total_semanas_cotizadas': semanas_desc.get('total_semanas_cotizadas', datos_basicos.get('total_semanas_cotizadas', 0)),
-                'semanas_reintegradas': semanas_desc.get('semanas_reintegradas', datos_basicos.get('semanas_reintegradas', 0)),
-            
-                # Conservación
-                'fecha_ultima_baja': formatear_fecha(conservacion.get('fecha_ultima_baja', '')),
-                'fecha_vencimiento': formatear_fecha(conservacion.get('fecha_vencimiento', '')),
-            
-                # Promedio 250 semanas
-                'salario_promedio_diario': promedio_250.get('salario_promedio_diario', 0),
-                'tiene_250_semanas_completas': promedio_250.get('tiene_250_semanas_completas', ''),
-                'total_dias_calculados': promedio_250.get('total_dias_calculados', 0),
-                'fecha_inicio_ventana': formatear_fecha(promedio_250.get('fecha_inicio_ventana', '')),
-                'fecha_fin_ventana': formatear_fecha(promedio_250.get('fecha_fin_ventana', ''))
-            }
-
-            self.constancias_procesadas.append(registro)
-
-            # Enviar a Google Sheets
-            if sheets_manager:
-                self.enviar_datos_completos_a_sheets(registro)
-
-            return registro
-
-        except Exception as e:
-            logger.error(f"Error procesando constancia completa: {e}")
-            return None
-
-    def enviar_datos_completos_a_sheets(self, registro):
-        """Enviar datos completos a Google Sheets - 21 columnas"""
-        try:
-            nombre_hoja = "Constancias_IMSS_Completo"
+            nombre_hoja = "Constancias_IMSS_Basico"
             sheets_manager.crear_hoja_si_no_existe(nombre_hoja)
 
-            # ✅ FILA CON 21 COLUMNAS EN ORDEN
             fila_datos = [
+                registro['fecha_procesamiento'],
                 registro['archivo'],
-                registro['fecha_consulta'],
+                registro['nombre_cliente'],
                 registro['nss'],
                 registro['curp'],
-                registro['nombre'],
-                registro['fecha_nacimiento'],
-                registro['edad'],
                 registro['fecha_emision'],
+                registro['semanas_cotizadas'],
+                registro['semanas_imss'],
+                registro['semanas_descontadas'],
+                registro['semanas_reintegradas'],
+                registro['total_semanas'],
                 registro['ley_aplicable'],
                 registro['fecha_primer_alta'],
-                registro['semanas_cotizadas_imss'],
-                registro['semanas_descontadas'],
-                registro['total_semanas_cotizadas'],
-                registro['semanas_reintegradas'],
-                registro['fecha_ultima_baja'],
-                registro['fecha_vencimiento'],
-                registro['salario_promedio_diario'],
-                registro['tiene_250_semanas_completas'],
-                registro['total_dias_calculados'],
-                registro['fecha_inicio_ventana'],
-                registro['fecha_fin_ventana']
+                registro['anos_cotizando_antes_1997'],
+                registro['errores']
             ]
 
             sheets_manager.agregar_fila(nombre_hoja, fila_datos)
-            logger.info(f"✅ Datos completos enviados a Google Sheets: NSS={registro['nss']}")
+            logger.info(f"✅ Datos básicos enviados a Google Sheets: NSS={registro['nss']}")
 
         except Exception as e:
-            logger.error(f"❌ Error enviando datos completos a Google Sheets: {e}")
-
+            logger.error(f"❌ Error enviando datos básicos a Google Sheets: {e}")
 
 # Configuración de FastAPI
 app = FastAPI(
@@ -574,235 +508,6 @@ async def calculate_pension_from_json(pension_data: dict, debug_mode: bool = Fal
             "timestamp": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
 
-def procesar_historial_completo_con_conservacion(pdf_path: str) -> Dict[str, Any]:
-    """
-    Función principal que integra todo el flujo - VERSIÓN ACTUALIZADA
-    """
-    try:
-        # 1. EXTRAER TEXTO DEL PDF PRIMERO
-        with pdfplumber.open(pdf_path) as pdf:
-            full_text = ""
-            for page in pdf.pages:
-                full_text += page.extract_text() + "\n"
-        
-        # 2. Extracción básica con TEXTO (no ruta)
-        from modules.modulo2.historial_laboral import HistorialLaboralExtractor
-        extractor = HistorialLaboralExtractor()
-        datos_base = extractor.procesar_constancia(full_text)  # ← TEXTO, no ruta
-
-        # 3. CRÍTICO: Aplicar corrección exacta
-        from correccion_semanas_final import aplicar_correccion_exacta
-        datos_corregidos = aplicar_correccion_exacta(datos_base, debug=True)
-
-        # 4. NUEVO: Calcular conservación de derechos
-        conservacion = calcular_conservacion_integrada(datos_corregidos)
-
-        # 5. NUEVO: Analizar semanas descontadas
-        analisis_descuentos = procesar_semanas_descontadas(datos_corregidos)
-
-        # 6. NUEVO: Calcular promedio 250 semanas para Ley 73
-        promedio_250 = None
-        ley_aplicable = datos_corregidos.get("datos_basicos", {}).get("ley_aplicable")
-        
-        if ley_aplicable == "Ley 73":
-            try:
-                promedio_250 = calcular_promedio_250_desde_correccion(
-                    datos_corregidos, 
-                    debug=True
-                )
-                
-                # Verificar historial detallado y agregar advertencia si es necesario
-                if promedio_250 and isinstance(promedio_250, dict):
-                    detalle_calculo = promedio_250.get("detalle_calculo", {})
-                    cambios_detectados = detalle_calculo.get("cambios_salariales_detectados", 0)
-                    
-                    if cambios_detectados == 0:
-                        if "observaciones" not in promedio_250:
-                            promedio_250["observaciones"] = []
-                        
-                        advertencia = (
-                            "⚠️ No se detectaron cambios salariales en la constancia. "
-                            "El cálculo se realizó con salario único por período. "
-                            "Verifique que la constancia incluya 'historial de movimientos afiliatorios' "
-                            "para un cálculo más preciso."
-                        )
-                        
-                        promedio_250["observaciones"].insert(0, advertencia)
-                        promedio_250["advertencia_historial_incompleto"] = True
-                    else:
-                        promedio_250["advertencia_historial_incompleto"] = False
-                        
-            except Exception as e:
-                print(f"Error calculando promedio 250 semanas: {e}")
-                promedio_250 = None
-
-         # 7. Compilar resultado final - VERSIÓN ACTUALIZADA
-        resultado_final = {
-            "datos_personales": datos_corregidos.get("datos_personales", {}),
-            "datos_basicos": datos_corregidos.get("datos_basicos", {}),
-            
-            # ✅ NUEVO: Resumen de semanas utilizadas
-            "resumen_cotizaciones": {
-                "semanas_utilizadas_calculo": datos_corregidos.get("correccion_aplicada", {}).get("total_semanas_cotizadas", 0),
-                "semanas_cotizadas_imss": datos_corregidos.get("datos_basicos", {}).get("semanas_cotizadas_imss", 0),
-                "total_semanas_cotizadas_oficial": datos_corregidos.get("datos_basicos", {}).get("total_semanas_cotizadas", 0),
-                "precision_calculo": "Exacta" if datos_corregidos.get("correccion_aplicada", {}).get("es_exacto", False) else "Aproximada"
-            },
-            
-            "historial_laboral": datos_corregidos.get("historial_laboral", {}),
-            "correccion_aplicada": datos_corregidos.get("correccion_aplicada", {}),
-            
-            # ✅ Conservación sin duplicados
-            "conservacion_derechos": conservacion.to_dict() if conservacion else None,
-            
-            "analisis_descuentos": analisis_descuentos.to_dict() if analisis_descuentos else None,
-            "promedio_250_semanas": promedio_250,
-            "precision_exacta": datos_corregidos.get("correccion_aplicada", {}).get("es_exacto", False),
-            "timestamp": datetime.now().isoformat(),
-            "status": "success"
-        }
-
-        return resultado_final
-
-    except Exception as e:
-        return {
-            "status": "error",
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        }
-
-
-def calcular_conservacion_integrada(datos_corregidos: Dict[str, Any]):
-    """
-    Calcula conservación de derechos usando datos ya procesados por correccion_semanas_final.py
-    """
-    try:
-        # Verificar que los datos fueron corregidos
-        correccion_info = datos_corregidos.get('correccion_aplicada')
-        print(f"[DEBUG CONSERVACIÓN] Campos disponibles en correccion_aplicada:")
-        print(f"[DEBUG CONSERVACIÓN] {list(correccion_info.keys()) if correccion_info else 'None'}")
-        print(f"[DEBUG CONSERVACIÓN] total_semanas_cotizadas: {correccion_info.get('total_semanas_cotizadas', 'NO EXISTE')}")
-        print(f"[DEBUG CONSERVACIÓN] semanas_cotizadas_imss_calculadas: {correccion_info.get('semanas_cotizadas_imss_calculadas', 'NO EXISTE')}")
-        if not correccion_info:
-            raise ValueError("Los datos deben ser procesados primero por correccion_semanas_final.py")
-        
-        print(f"[CONSERVACIÓN] Usando semanas exactas: {correccion_info.get('total_semanas_cotizadas', 0)}")
-        print(f"[CONSERVACIÓN] Empalmes corregidos: {correccion_info.get('empalmes_corregidos', 0)}")
-        
-        # Crear calculadora y procesar
-        from conservacion_derechos import CalculadoraConservacionDerechos
-        calculadora = CalculadoraConservacionDerechos()
-        
-        # Obtener fecha de emisión
-        fecha_emision = datos_corregidos.get('datos_basicos', {}).get('fecha_emision')
-        
-        resultado = calculadora.calcular_conservacion_derechos(
-            datos_corregidos=datos_corregidos,
-            fecha_emision=fecha_emision
-        )
-        
-        print(f"[CONSERVACIÓN] Ley aplicable: {resultado.ley_aplicable}")
-        print(f"[CONSERVACIÓN] Conservación: {resultado.conservacion_años:.2f} años")
-        print(f"[CONSERVACIÓN] Estado: {'VIGENTE' if resultado.esta_vigente else 'VENCIDO'}")
-        
-        return resultado
-        
-    except Exception as e:
-        print(f"Error calculando conservación: {e}")
-        return None
-
-def procesar_semanas_descontadas(datos_corregidos: Dict[str, Any]):
-    """Procesa análisis de semanas descontadas"""
-    try:
-        from procesador_semanas_descontadas import ProcesadorSemanasDescontadas
-        procesador = ProcesadorSemanasDescontadas()
-        return procesador.procesar_semanas_desde_correccion(datos_corregidos)
-    except Exception as e:
-        print(f"Error procesando semanas descontadas: {e}")
-        return None
-
-def _extraer_resumen_cotizaciones(datos_corregidos: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Extrae resumen de cotizaciones incluyendo correcciones aplicadas
-    CORREGIDO: Usa únicamente nomenclatura oficial IMSS
-    """
-    datos_basicos = datos_corregidos.get("datos_basicos", {})
-    correccion = datos_corregidos.get("correccion_aplicada", {})
-
-    return {
-        "semanas_parser_original": correccion.get("semanas_parser_original", 0),
-        
-        # ✅ CORREGIDO: Usar nomenclatura oficial IMSS
-        "total_semanas_cotizadas_oficial": datos_basicos.get("total_semanas_cotizadas", 0),
-        "total_semanas_cotizadas_calculadas": correccion.get("total_semanas_cotizadas", 0),
-        
-        # Campos oficiales IMSS
-        "semanas_descontadas": datos_basicos.get("semanas_descontadas", 0),
-        "semanas_reintegradas": datos_basicos.get("semanas_reintegradas", 0),
-        
-        # Métricas de corrección  
-        "precision_original": correccion.get("precision_original", 0),
-        "precision_final": correccion.get("precision_final", 0),
-        "mejora_semanas": correccion.get("mejora_semanas", 0),
-        "empalmes_corregidos": correccion.get("empalmes_corregidos", 0),
-        "dias_empalme_total": correccion.get("dias_empalme_total", 0),
-        "es_exacto": correccion.get("es_exacto", False)
-    }
-
-# AGREGAR NUEVO ENDPOINT AL FINAL DE TUS ENDPOINTS EXISTENTES
-@app.post("/parse/historial/completo")
-async def parsear_historial_completo_con_conservacion(file: UploadFile = File(...)):
-    """
-    Endpoint principal - Procesa y envía automáticamente a Google Sheets
-    """
-    try:
-        # Guardar archivo temporal
-        temp_path = f"/tmp/{file.filename}"
-        with open(temp_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-
-        # Procesar con conservación incluida
-        resultado = procesar_historial_completo_con_conservacion(temp_path)
-
-        # ✅ NUEVO: Enviar automáticamente a Google Sheets si fue exitoso
-        if resultado.get("status") == "success" and sheets_manager:
-            try:
-                # Agregar nombre de archivo al resultado
-                resultado['archivo'] = file.filename
-                
-                # Enviar a Sheets
-                data_storage.agregar_constancia_completa(resultado)
-                
-                logger.info(f"✅ Constancia {file.filename} procesada y enviada a Sheets")
-            except Exception as e:
-                logger.error(f"⚠️ Error enviando a Sheets (datos procesados correctamente): {e}")
-                # No fallar el proceso completo si Sheets falla
-
-        # Limpiar archivo temporal
-        os.unlink(temp_path)
-
-        return resultado
-
-    except Exception as e:
-        return {"error": str(e), "status": "error"}
-
-@app.get("/parse/conservacion/test")
-async def test_conservacion():
-    """Endpoint de prueba para la conservación de derechos"""
-    try:
-        from conservacion_derechos import ejemplo_uso_con_datos_corregidos
-        resultado = ejemplo_uso_con_datos_corregidos()
-        return {
-            "status": "success",
-            "test_result": resultado,
-            "timestamp": datetime.now().isoformat()
-        }
-    except Exception as e:
-        return {"error": str(e), "status": "error"}
-
-# ================================
-# FIN DEL CÓDIGO A AGREGAR
-# ================================
 
 if __name__ == "__main__":
     import uvicorn
