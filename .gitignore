@@ -14,8 +14,9 @@ ENV/
 
 # Secrets (CRÍTICO)
 .env
-.env.*
-*.env
+.env.local
+.env.production
+.env.staging
 credentials.json
 secrets/
 *.pem
@@ -82,4 +83,5 @@ ssh-copy-id*
 *_backup.py
 main_backup.py
 
+src/parser/resultado_*.json
 
