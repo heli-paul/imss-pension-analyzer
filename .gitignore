@@ -1,86 +1,85 @@
+# Python
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
 .venv/
+.venv_new/
+venv/
+env/
+ENV/
+
+# Secrets (CRÍTICO)
 .env
-*.log
-*.pdf
-
-# Archivos sensibles
+.env.*
+*.env
+credentials.json
 secrets/
-*.json
-!config/*.json.example
+*.pem
+*.key
+.secret_key.tmp
 
-# Respaldos y temporales  
+# Database
+*.db
+*.sqlite
+*.sqlite3
+imss_pension.db
+
+# Backups
+*.tar.gz
+*.zip
+backup_*
 *.backup
 *.bak
 *.old
+
+# Node.js / Next.js
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Uploads temporales
+uploads/
+temp/
+data/
+
+# Archivos de prueba
+test_*.py
+resp.json
+todo_*.txt
+
+# SSH
+ssh-copy-id*
+*.pub
+
+# Archivos de guardado temporal
 *.save
 *.save.*
 *_backup.py
 main_backup.py
 
-# Archivos de prueba
-test_*.py
-*.txt
-!requirements.txt
-!README.txt
 
-# SSH keys
-ssh-copy-id*
-*.pub
-
-# Otros temporales
-resp.json
-todo_*.txt
-
-# Virtual environments
-.venv/
-.venv_new/
-venv/
-env/
-
-# Backups
-*.tar.gz
-*.zip
-backup_*
-
-# Database
-*.db
-*.sqlite3
-
-# Secrets
-.env
-.secret_key.tmp
-secrets/
-credentials.json
-
-# Build
-.next/
-node_modules/
-dist/
-
-# Virtual environments
-.venv/
-.venv_new/
-venv/
-env/
-
-# Backups
-*.tar.gz
-*.zip
-backup_*
-
-# Database
-*.db
-*.sqlite3
-
-# Secrets
-.env
-.secret_key.tmp
-secrets/
-credentials.json
-
-# Build
-.next/
-node_modules/
-dist/
