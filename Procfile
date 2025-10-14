@@ -1,1 +1,3 @@
-web: cd src && uvicorn api.main:app --host 0.0.0.0 --port $PORT --reload
+web: uvicorn src.api.main:app --host 0.0.0.0 --port $PORT
+
+
