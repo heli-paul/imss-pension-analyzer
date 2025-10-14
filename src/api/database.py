@@ -1,7 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from .config import settings
+from .config import get_settings
+
+# Obtener configuración
+settings = get_settings()
 
 # Crear engine de SQLite
 engine = create_engine(
@@ -22,5 +25,6 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 

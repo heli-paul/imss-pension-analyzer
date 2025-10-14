@@ -85,3 +85,4 @@ main_backup.py
 
 src/parser/resultado_*.json
 
+.env
