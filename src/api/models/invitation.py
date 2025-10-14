@@ -66,7 +66,7 @@ class Invitation(Base):
     notes = Column(Text, nullable=True)
     
     # Relationships
-    user = relationship("User", foreign_keys=[user_id], back_populates="invitation")
+    user = relationship("User", foreign_keys=[user_id])
     creator = relationship("User", foreign_keys=[created_by])
     
     @classmethod

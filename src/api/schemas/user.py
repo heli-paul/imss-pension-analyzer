@@ -54,7 +54,7 @@ class UserResponse(UserBase):
     plan: str
     analisis_realizados: int
     cuota_analisis: int
-    can_analyze: bool
+    # can_analyze: bool
     
     # Google Sheets
     spreadsheet_id: Optional[str] = None

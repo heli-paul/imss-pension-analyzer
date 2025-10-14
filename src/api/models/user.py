@@ -43,7 +43,7 @@ class User(Base):
     invitation_token = Column(String(64), nullable=True)
     
     # Relationships
-    invitation = relationship("Invitation", foreign_keys="Invitation.user_id", back_populates="user")
+    # invitation = relationship("Invitation", foreign_keys="Invitation.user_id", back_populates="user")
     inviter = relationship("User", remote_side=[id], foreign_keys=[invited_by])
     
     def is_admin_user(self) -> bool:

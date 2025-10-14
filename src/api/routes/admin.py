@@ -71,7 +71,6 @@ async def create_invitation(
     
     response = InvitationResponse.model_validate(invitation)
     response.invitation_url = invitation_url
-    response.is_valid = invitation.is_valid()
     
     return response
 
@@ -125,7 +124,6 @@ async def list_invitations(
     for inv in invitations:
         response = InvitationResponse.model_validate(inv)
         response.invitation_url = f"{settings.FRONTEND_URL}/register?token={inv.token}"
-        response.is_valid = inv.is_valid()
         invitation_responses.append(response)
     
     total_pages = (total + page_size - 1) // page_size
@@ -162,7 +160,6 @@ async def get_invitation(
     
     response = InvitationResponse.model_validate(invitation)
     response.invitation_url = f"{settings.FRONTEND_URL}/register?token={invitation.token}"
-    response.is_valid = invitation.is_valid()
     
     return response
 
@@ -189,7 +186,6 @@ async def revoke_invitation(
     invitation = service.get_invitation_by_id(invitation_id)
     
     response = InvitationResponse.model_validate(invitation)
-    response.is_valid = invitation.is_valid()
     
     return response
 
@@ -233,7 +229,6 @@ async def resend_invitation(
     
     response = InvitationResponse.model_validate(invitation)
     response.invitation_url = f"{settings.FRONTEND_URL}/register?token={invitation.token}"
-    response.is_valid = invitation.is_valid()
     
     return response
 
@@ -288,7 +283,6 @@ async def create_bulk_invitations(
             
             response = InvitationResponse.model_validate(invitation)
             response.invitation_url = f"{settings.FRONTEND_URL}/register?token={invitation.token}"
-            response.is_valid = invitation.is_valid()
             
             created.append(response)
         else:

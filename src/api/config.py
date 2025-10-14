@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     JWT_SECRET_KEY: str
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080
     
     # Base de datos
     DATABASE_URL: str
@@ -39,6 +39,15 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
     
+    # CORS
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://imss-pension-analyzer.vercel.app",
+        "https://app.pensionasoft.com",
+        "https://pensionasoft.com"
+    ]
+    
     class Config:
         env_file = ".env"
         case_sensitive = True
@@ -50,6 +59,5 @@ def get_settings() -> Settings:
     Obtiene la configuración de la aplicación (cached).
     """
     return Settings()
-
 
 

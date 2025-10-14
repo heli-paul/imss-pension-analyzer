@@ -50,7 +50,7 @@ class InvitationResponse(BaseModel):
     user_id: Optional[int] = None
     created_by: int
     notes: Optional[str] = None
-    is_valid: bool
+    # is_valid: bool
     invitation_url: Optional[str] = None
     
     class Config:
