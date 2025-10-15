@@ -1,88 +1,112 @@
+# ===========================================
 # Python
-__pycache__/
+# ===========================================
 *.py[cod]
 *$py.class
 *.so
 .Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+__pycache__/
+*.pyc
 
-# Virtual environments
+# ===========================================
+# Virtual Environment
+# ===========================================
 .venv/
-.venv_new/
 venv/
-env/
 ENV/
-
-# Secrets (CRÍTICO)
-.env
+env/
 .env.local
-.env.production
-.env.staging
-credentials.json
-secrets/
-*.pem
-*.key
-.secret_key.tmp
 
+# ===========================================
+# Environment Variables
+# ===========================================
+.env
+.env.production
+.env.local
+.env.*.local
+
+# ===========================================
 # Database
+# ===========================================
 *.db
 *.sqlite
 *.sqlite3
 imss_pension.db
 
-# Backups
-*.tar.gz
-*.zip
-backup_*
-*.backup
-*.bak
-*.old
-
-# Node.js / Next.js
-node_modules/
-.next/
-out/
-build/
-dist/
-
-# Logs
-*.log
-logs/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# IDEs
+# ===========================================
+# IDE / Editor
+# ===========================================
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
+.DS_Store
 
+# ===========================================
 # Testing
+# ===========================================
 .pytest_cache/
 .coverage
 htmlcov/
+.tox/
+.nox/
 
-# Uploads temporales
-uploads/
+# ===========================================
+# Logs
+# ===========================================
+*.log
+logs/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ===========================================
+# Next.js (Frontend)
+# ===========================================
+.next/
+out/
+node_modules/
+*.tsbuildinfo
+next-env.d.ts
+
+# ===========================================
+# Archivos temporales
+# ===========================================
+*.tmp
+*.bak
+*.swp
+.cache/
 temp/
-data/
+tmp/
 
-# Archivos de prueba
-test_*.py
-resp.json
-todo_*.txt
+# ===========================================
+# OS Files
+# ===========================================
+.DS_Store
+Thumbs.db
+desktop.ini
 
-# SSH
-ssh-copy-id*
-*.pub
+# ===========================================
+# Deployment
+# ===========================================
+.vercel
+.railway/
 
-# Archivos de guardado temporal
-*.save
-*.save.*
-*_backup.py
-main_backup.py
 
-src/parser/resultado_*.json
-
-.env
