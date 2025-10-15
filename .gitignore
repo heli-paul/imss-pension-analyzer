@@ -17,11 +17,9 @@ parts/
 sdist/
 var/
 wheels/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 __pycache__/
 *.pyc
 
@@ -32,7 +30,6 @@ __pycache__/
 venv/
 ENV/
 env/
-.env.local
 
 # ===========================================
 # Environment Variables
@@ -40,7 +37,6 @@ env/
 .env
 .env.production
 .env.local
-.env.*.local
 
 # ===========================================
 # Database
@@ -59,6 +55,9 @@ imss_pension.db
 *.swo
 *~
 .DS_Store
+*.save
+*.save.*
+*.backup
 
 # ===========================================
 # Testing
@@ -66,16 +65,12 @@ imss_pension.db
 .pytest_cache/
 .coverage
 htmlcov/
-.tox/
-.nox/
 
 # ===========================================
 # Logs
 # ===========================================
 *.log
 logs/
-pip-log.txt
-pip-delete-this-directory.txt
 
 # ===========================================
 # Next.js (Frontend)
@@ -83,30 +78,29 @@ pip-delete-this-directory.txt
 .next/
 out/
 node_modules/
-*.tsbuildinfo
-next-env.d.ts
 
 # ===========================================
 # Archivos temporales
 # ===========================================
 *.tmp
 *.bak
-*.swp
 .cache/
 temp/
 tmp/
 
 # ===========================================
-# OS Files
+# Archivos sensibles
 # ===========================================
-.DS_Store
-Thumbs.db
-desktop.ini
+credentials.json
+**/credentials.json
+
+# ===========================================
+# Backups
+# ===========================================
+backup_*.tar.gz
+*.old
 
 # ===========================================
 # Deployment
 # ===========================================
-.vercel
 .railway/
-
-
