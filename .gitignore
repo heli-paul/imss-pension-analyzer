@@ -1,88 +1,106 @@
+# ===========================================
 # Python
-__pycache__/
+# ===========================================
 *.py[cod]
 *$py.class
 *.so
 .Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+__pycache__/
+*.pyc
 
-# Virtual environments
+# ===========================================
+# Virtual Environment
+# ===========================================
 .venv/
-.venv_new/
 venv/
-env/
 ENV/
+env/
 
-# Secrets (CRÍTICO)
+# ===========================================
+# Environment Variables
+# ===========================================
 .env
-.env.local
 .env.production
-.env.staging
-credentials.json
-secrets/
-*.pem
-*.key
-.secret_key.tmp
+.env.local
 
+# ===========================================
 # Database
+# ===========================================
 *.db
 *.sqlite
 *.sqlite3
 imss_pension.db
 
-# Backups
-*.tar.gz
-*.zip
-backup_*
-*.backup
-*.bak
-*.old
-
-# Node.js / Next.js
-node_modules/
-.next/
-out/
-build/
-dist/
-
-# Logs
-*.log
-logs/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# IDEs
+# ===========================================
+# IDE / Editor
+# ===========================================
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
+.DS_Store
+*.save
+*.save.*
+*.backup
 
+# ===========================================
 # Testing
+# ===========================================
 .pytest_cache/
 .coverage
 htmlcov/
 
-# Uploads temporales
-uploads/
+# ===========================================
+# Logs
+# ===========================================
+*.log
+logs/
+
+# ===========================================
+# Next.js (Frontend)
+# ===========================================
+.next/
+out/
+node_modules/
+
+# ===========================================
+# Archivos temporales
+# ===========================================
+*.tmp
+*.bak
+.cache/
 temp/
-data/
+tmp/
 
-# Archivos de prueba
-test_*.py
-resp.json
-todo_*.txt
+# ===========================================
+# Archivos sensibles
+# ===========================================
+credentials.json
+**/credentials.json
 
-# SSH
-ssh-copy-id*
-*.pub
+# ===========================================
+# Backups
+# ===========================================
+backup_*.tar.gz
+*.old
 
-# Archivos de guardado temporal
-*.save
-*.save.*
-*_backup.py
-main_backup.py
-
-src/parser/resultado_*.json
-
-.env
+# ===========================================
+# Deployment
+# ===========================================
+.railway/
