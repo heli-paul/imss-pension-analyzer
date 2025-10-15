@@ -24,8 +24,7 @@ COPY . .
 EXPOSE 8080
 
 # Comando de inicio
-CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8080"]
-
+CMD uvicorn src.api.main:app --host 0.0.0.0 --port ${PORT:-8080}
 
 
 # Railway build Tue Oct 14 19:49:26 CST 2025
