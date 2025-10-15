@@ -6,10 +6,14 @@ from .config import get_settings
 # Obtener configuración
 settings = get_settings()
 
-# Crear engine de SQLite
+# Detectar si es SQLite o PostgreSQL
+connect_args = {}
+if settings.database_url.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+
 engine = create_engine(
-    settings.DATABASE_URL,
-    connect_args={"check_same_thread": False}  # Solo para SQLite
+    settings.database_url,
+    connect_args=connect_args
 )
 
 # Crear SessionLocal
