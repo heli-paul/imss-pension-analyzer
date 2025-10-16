@@ -82,7 +82,7 @@ class AuthService:
         new_user = User(
             email=email,
             full_name=full_name,
-            company_name=company_name,
+            # company_name=company_name,
             hashed_password=hashed_password,
             plan=plan,
             cuota_analisis=cuota_analisis,
