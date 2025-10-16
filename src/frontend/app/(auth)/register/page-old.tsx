@@ -17,5 +17,3 @@ export default function RegisterPage() {
     </Suspense>
   );
 }
-
-// Cache buster: v2.0
