@@ -52,7 +52,7 @@ async def analizar_constancia(
     if not check_usage_limit(current_user):
         raise HTTPException(
             status_code=429,
-            detail=f"Límite de {current_user.monthly_quota} análisis alcanzado. Actualiza tu plan."
+            detail=f"Límite de {current_user.cuota_analisis} análisis alcanzado. Actualiza tu plan."
         )
 
     # 2. Validar que es PDF
@@ -170,8 +170,8 @@ async def analizar_constancia(
             "usuario": {
                 "email": current_user.email,
                 "plan": current_user.plan,
-                "analisis_usados": current_user.usage_count + 1,
-                "analisis_restantes": current_user.monthly_quota - current_user.usage_count - 1
+                "analisis_usados": current_user.analisis_realizados + 1,
+                "analisis_restantes": current_user.cuota_analisis - current_user.analisis_realizados - 1
             },
             "data": {
                 "datos_personales": datos_corregidos.get("datos_basicos", {}),
@@ -200,10 +200,10 @@ async def ver_mi_uso(current_user: User = Depends(get_current_user)):
     return {
         "email": current_user.email,
         "plan": current_user.plan,
-        "cuota_mensual": current_user.monthly_quota,
-        "analisis_usados": current_user.usage_count,
-        "analisis_restantes": current_user.monthly_quota - current_user.usage_count,
-        "porcentaje_uso": round((current_user.usage_count / current_user.monthly_quota) * 100, 2),
+        "cuota_mensual": current_user.cuota_analisis,
+        "analisis_usados": current_user.analisis_realizados,
+        "analisis_restantes": current_user.cuota_analisis - current_user.analisis_realizados,
+        "porcentaje_uso": round((current_user.analisis_realizados / current_user.cuota_analisis) * 100, 2),
         "google_sheet": {
             "tiene_sheet": bool(current_user.spreadsheet_id),
             "spreadsheet_url": current_user.spreadsheet_url
