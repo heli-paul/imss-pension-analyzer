@@ -1,18 +1,19 @@
 // types/index.ts
-
 export interface User {
   id: number;
   email: string;
-  plan: 'free' | 'premium';
-  analyses_used: number;
-  analyses_limit: number;
+  full_name: string;
+  company_name?: string;
+  plan: 'free' | 'premium' | 'admin';
+  analisis_realizados: number;
+  cuota_analisis: number;
   created_at: string;
 }
 
 export interface AuthResponse {
   access_token: string;
   token_type: string;
-  user: User;
+  user?: User;
 }
 
 export interface LoginCredentials {
@@ -23,7 +24,9 @@ export interface LoginCredentials {
 export interface RegisterData {
   email: string;
   password: string;
-  full_name?: string;
+  full_name: string;
+  company_name?: string;
+  invitation_token: string;
 }
 
 export interface AnalysisResult {
