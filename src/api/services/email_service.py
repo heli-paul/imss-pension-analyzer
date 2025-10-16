@@ -44,7 +44,7 @@ class EmailService:
         if not self.client:
             return False, "SendGrid no está configurado"
         
-        registration_url = f"{self.frontend_url}/register?token={invitation_token}"
+        registration_url = f"{self.frontend_url}/invite?token={invitation_token}"
         
         html_content = self._render_invitation_template(
             to_name=to_name,
