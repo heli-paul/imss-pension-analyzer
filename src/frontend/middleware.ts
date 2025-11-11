@@ -6,6 +6,11 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const { pathname } = request.nextUrl;
   
+  // Si está accediendo a /admin, dejar pasar siempre (con o sin token)
+  if (pathname.startsWith('/admin')) {
+    return NextResponse.next();
+  }
+  
   // Rutas públicas que no requieren autenticación
   const publicRoutes = ['/login', '/register', '/invite', '/signup'];
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
@@ -17,13 +22,11 @@ export function middleware(request: NextRequest) {
   }
   
   // Si hay token y está en login/register, redirigir a upload
-  // PERO permitir acceso directo a /admin
   if (token && isPublicRoute) {
     const uploadUrl = new URL('/upload', request.url);
     return NextResponse.redirect(uploadUrl);
   }
   
-  // Permitir cualquier otra ruta si hay token
   return NextResponse.next();
 }
 
