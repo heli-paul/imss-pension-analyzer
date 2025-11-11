@@ -10,35 +10,25 @@ export function middleware(request: NextRequest) {
   const publicRoutes = ['/login', '/register', '/invite', '/signup'];
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
   
-  // Rutas protegidas que no redirigen automáticamente
-  const protectedNoRedirect = ['/admin'];
-  const isProtectedNoRedirect = protectedNoRedirect.some(route => pathname.startsWith(route));
-  
   // Si no hay token y está intentando acceder a una ruta protegida
   if (!token && !isPublicRoute) {
     const loginUrl = new URL('/login', request.url);
     return NextResponse.redirect(loginUrl);
   }
   
-  // Si hay token y está intentando acceder a login/register, redirigir a upload
-  // EXCEPTO si viene de admin
-  if (token && isPublicRoute && !isProtectedNoRedirect) {
+  // Si hay token y está en login/register, redirigir a upload
+  // PERO permitir acceso directo a /admin
+  if (token && isPublicRoute) {
     const uploadUrl = new URL('/upload', request.url);
     return NextResponse.redirect(uploadUrl);
   }
   
+  // Permitir cualquier otra ruta si hay token
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    /*
-     * Coincidir con todas las rutas excepto:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };
