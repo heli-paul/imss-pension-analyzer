@@ -274,8 +274,8 @@ class InvitationService:
         
         avg_days = self.db.query(
             func.avg(
-                func.julianday(Invitation.used_at) - func.julianday(Invitation.created_at)
-            )
+                func.extract('epoch', Invitation.used_at) - func.extract('epoch', Invitation.created_at)
+            ) / 86400  # Convertir segundos a días
         ).filter(Invitation.status == 'used').scalar()
         
         return InvitationStatsResponse(
