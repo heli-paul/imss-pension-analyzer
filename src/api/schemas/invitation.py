@@ -1,11 +1,9 @@
 """
 Pydantic schemas para validación de datos de invitaciones.
 """
-
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional
 from datetime import datetime
-
 
 class InvitationCreate(BaseModel):
     """
@@ -17,6 +15,10 @@ class InvitationCreate(BaseModel):
     expiration_days: int = Field(default=7, ge=1, le=90)
     notes: Optional[str] = Field(default=None, max_length=500)
     
+    # NUEVO: Sistema de créditos
+    initial_credits: int = Field(default=10, ge=1, le=1000, description="Créditos iniciales")
+    credits_valid_days: int = Field(default=30, ge=1, le=365, description="Días de validez de créditos")
+    
     @field_validator('plan')
     @classmethod
     def validate_plan(cls, v: str) -> str:
@@ -25,14 +27,12 @@ class InvitationCreate(BaseModel):
             raise ValueError(f'Plan debe ser uno de: {", ".join(allowed_plans)}')
         return v
 
-
 class InvitationUpdate(BaseModel):
     """
     Schema para actualizar una invitación existente.
     """
     notes: Optional[str] = Field(default=None, max_length=500)
     expiration_days: Optional[int] = Field(default=None, ge=1, le=90)
-
 
 class InvitationResponse(BaseModel):
     """
@@ -50,12 +50,10 @@ class InvitationResponse(BaseModel):
     user_id: Optional[int] = None
     created_by: int
     notes: Optional[str] = None
-    # is_valid: bool
     invitation_url: Optional[str] = None
     
     class Config:
         from_attributes = True
-
 
 class InvitationListResponse(BaseModel):
     """
@@ -67,13 +65,11 @@ class InvitationListResponse(BaseModel):
     page_size: int
     total_pages: int
 
-
 class InvitationValidateRequest(BaseModel):
     """
     Schema para validar un token de invitación.
     """
     token: str = Field(..., min_length=10)
-
 
 class InvitationValidateResponse(BaseModel):
     """
@@ -85,7 +81,6 @@ class InvitationValidateResponse(BaseModel):
     cuota_analisis: Optional[int] = None
     expires_at: Optional[datetime] = None
     error_message: Optional[str] = None
-
 
 class InvitationStatsResponse(BaseModel):
     """
@@ -99,7 +94,6 @@ class InvitationStatsResponse(BaseModel):
     conversion_rate: float
     avg_days_to_use: Optional[float] = None
 
-
 class BulkInvitationCreate(BaseModel):
     """
     Schema para crear múltiples invitaciones.
@@ -109,7 +103,10 @@ class BulkInvitationCreate(BaseModel):
     cuota_analisis: int = Field(default=30, ge=1, le=1000)
     expiration_days: int = Field(default=7, ge=1, le=90)
     notes: Optional[str] = Field(default=None, max_length=500)
-
+    
+    # NUEVO: Sistema de créditos
+    initial_credits: int = Field(default=10, ge=1, le=1000, description="Créditos iniciales")
+    credits_valid_days: int = Field(default=30, ge=1, le=365, description="Días de validez de créditos")
 
 class BulkInvitationResponse(BaseModel):
     """
@@ -119,6 +116,3 @@ class BulkInvitationResponse(BaseModel):
     skipped: list[dict]
     total_created: int
     total_skipped: int
-
-
-
