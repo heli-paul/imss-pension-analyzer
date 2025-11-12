@@ -299,3 +299,139 @@ async def create_bulk_invitations(
     )
 
 
+
+# ==================== GESTIÓN DE USUARIOS Y CRÉDITOS ====================
+
+from ..schemas.user import (
+    AddCreditsRequest,
+    UserListResponse,
+    AdminDashboardStats
+)
+
+@router.get("/users", response_model=list[UserListResponse])
+async def list_users(
+    skip: int = 0,
+    limit: int = 50,
+    search: Optional[str] = None,
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Lista todos los usuarios con paginación y búsqueda.
+    """
+    query = db.query(User)
+    
+    # Filtro de búsqueda
+    if search:
+        query = query.filter(
+            (User.email.ilike(f"%{search}%")) |
+            (User.full_name.ilike(f"%{search}%")) |
+            (User.company_name.ilike(f"%{search}%"))
+        )
+    
+    # Ordenar por fecha de creación (más recientes primero)
+    query = query.order_by(User.created_at.desc())
+    
+    users = query.offset(skip).limit(limit).all()
+    return users
+
+@router.post("/users/credits", status_code=status.HTTP_200_OK)
+async def add_credits_to_user(
+    data: AddCreditsRequest,
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Agrega créditos a un usuario específico.
+    """
+    # Buscar usuario
+    user = db.query(User).filter(User.id == data.user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
+    
+    # Agregar créditos
+    user.add_credits(data.credits, data.days_valid)
+    db.commit()
+    db.refresh(user)
+    
+    return {
+        "message": f"Se agregaron {data.credits} créditos a {user.email}",
+        "user_id": user.id,
+        "total_credits": user.credits,
+        "expires_at": user.credits_expire_at.isoformat() if user.credits_expire_at else None
+    }
+
+@router.get("/dashboard/stats", response_model=AdminDashboardStats)
+async def get_dashboard_stats(
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Obtiene estadísticas para el dashboard del admin.
+    """
+    from datetime import datetime, timedelta
+    from sqlalchemy import func
+    from ..models.invitation import Invitation
+    
+    # Usuarios
+    total_users = db.query(func.count(User.id)).scalar()
+    active_users = db.query(func.count(User.id)).filter(User.is_active == True).scalar()
+    
+    # Créditos
+    total_credits = db.query(func.sum(User.credits)).scalar() or 0
+    users_without_credits = db.query(func.count(User.id)).filter(
+        (User.credits <= 0) | (User.credits_expire_at < datetime.utcnow())
+    ).scalar()
+    
+    # Invitaciones
+    total_invitations = db.query(func.count(Invitation.id)).scalar()
+    pending_invitations = db.query(func.count(Invitation.id)).filter(
+        Invitation.status == 'pending'
+    ).scalar()
+    used_invitations = db.query(func.count(Invitation.id)).filter(
+        Invitation.status == 'used'
+    ).scalar()
+    
+    # Análisis (basado en contador de usuarios)
+    today = datetime.utcnow().date()
+    week_ago = datetime.utcnow() - timedelta(days=7)
+    month_ago = datetime.utcnow() - timedelta(days=30)
+    
+    # Por ahora usamos analisis_realizados como aproximación
+    # TODO: Agregar tabla de análisis con timestamps para métricas precisas
+    total_analysis_today = 0  # Placeholder
+    total_analysis_week = db.query(func.sum(User.analisis_realizados)).scalar() or 0
+    total_analysis_month = total_analysis_week
+    
+    return AdminDashboardStats(
+        total_users=total_users,
+        active_users=active_users,
+        total_credits_distributed=total_credits,
+        users_without_credits=users_without_credits,
+        total_invitations=total_invitations,
+        pending_invitations=pending_invitations,
+        used_invitations=used_invitations,
+        total_analysis_today=total_analysis_today,
+        total_analysis_week=total_analysis_week,
+        total_analysis_month=total_analysis_month
+    )
+
+@router.get("/users/{user_id}", response_model=UserListResponse)
+async def get_user_details(
+    user_id: int,
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Obtiene detalles de un usuario específico.
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
+    return user
