@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://imss-pension-api.onrender.com';
 
@@ -19,17 +20,19 @@ export default function AdminPanel() {
   }, []);
 
   const checkAuth = async () => {
-    const token = localStorage.getItem('token');
+    // Buscar token en cookies O localStorage
+    const token = Cookies.get('token') || localStorage.getItem('token');
+    
     if (!token) {
       router.push('/login');
       return;
     }
-    loadData();
+    
+    loadData(token);
   };
 
-  const loadData = async () => {
+  const loadData = async (token: string) => {
     setLoading(true);
-    const token = localStorage.getItem('token');
 
     try {
       const [statsRes, invitesRes] = await Promise.all([
@@ -58,7 +61,7 @@ export default function AdminPanel() {
     setSending(true);
     setMessage({ type: '', text: '' });
 
-    const token = localStorage.getItem('token');
+    const token = Cookies.get('token') || localStorage.getItem('token');
 
     try {
       const response = await fetch(`${API_URL}/admin/invitations`, {
@@ -73,7 +76,7 @@ export default function AdminPanel() {
       if (response.ok) {
         setMessage({ type: 'success', text: `✅ Invitación enviada a ${newEmail}` });
         setNewEmail('');
-        loadData();
+        if (token) loadData(token);
       } else {
         const error = await response.json();
         setMessage({ type: 'error', text: error.detail || 'Error' });
