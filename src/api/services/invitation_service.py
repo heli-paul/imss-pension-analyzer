@@ -69,7 +69,9 @@ class InvitationService:
             cuota_analisis=data.cuota_analisis,
             expires_at=expires_at,
             created_by=admin_user_id,
-            notes=data.notes
+            notes=data.notes,
+            initial_credits=data.initial_credits,
+            credits_valid_days=data.credits_valid_days
         )
         
         self.db.add(invitation)

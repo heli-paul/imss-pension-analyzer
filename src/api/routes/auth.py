@@ -56,6 +56,11 @@ async def validate_invitation_token(
         email=invitation.email,
         plan=invitation.plan,
         cuota_analisis=invitation.cuota_analisis,
+        company_size=user_data.company_size,
+        initial_credits=invitation.initial_credits,
+        credits_valid_days=invitation.credits_valid_days
+        initial_credits=invitation.initial_credits,
+        credits_valid_days=invitation.credits_valid_days,
         expires_at=invitation.expires_at
     )
 
@@ -97,7 +102,10 @@ async def register(
         company_name=user_data.company_name,
         invitation_token=user_data.invitation_token,
         plan=invitation.plan,
-        cuota_analisis=invitation.cuota_analisis
+        cuota_analisis=invitation.cuota_analisis,
+        company_size=user_data.company_size,
+        initial_credits=invitation.initial_credits,
+        credits_valid_days=invitation.credits_valid_days
     )
     
     if error:
