@@ -141,7 +141,25 @@ async def register(
     return Token(
         access_token=access_token,
         token_type="bearer",
-        user=UserResponse.model_validate(user)
+        user=UserResponse(
+            id=user.id,
+            email=user.email,
+            full_name=user.full_name,
+            company_name=user.company_name,
+            company_size=user.company_size,
+            is_active=user.is_active,
+            is_admin=user.is_admin,
+            created_at=user.created_at,
+            plan=user.plan,
+            analisis_realizados=user.analisis_realizados,
+            cuota_analisis=user.cuota_analisis,
+            credits=user.credits,
+            credits_expire_at=user.credits_expire_at,
+            has_valid_credits=user.has_valid_credits(),
+            spreadsheet_id=user.spreadsheet_id,
+            spreadsheet_url=user.spreadsheet_url,
+            invited_by=user.invited_by
+        )
     )
 
 
@@ -177,7 +195,25 @@ async def login(
     return Token(
         access_token=access_token,
         token_type="bearer",
-        user=UserResponse.model_validate(user)
+        user=UserResponse(
+            id=user.id,
+            email=user.email,
+            full_name=user.full_name,
+            company_name=user.company_name,
+            company_size=user.company_size,
+            is_active=user.is_active,
+            is_admin=user.is_admin,
+            created_at=user.created_at,
+            plan=user.plan,
+            analisis_realizados=user.analisis_realizados,
+            cuota_analisis=user.cuota_analisis,
+            credits=user.credits,
+            credits_expire_at=user.credits_expire_at,
+            has_valid_credits=user.has_valid_credits(),
+            spreadsheet_id=user.spreadsheet_id,
+            spreadsheet_url=user.spreadsheet_url,
+            invited_by=user.invited_by
+        )
     )
 
 
@@ -216,7 +252,25 @@ async def login_form(
     return Token(
         access_token=access_token,
         token_type="bearer",
-        user=UserResponse.model_validate(user)
+        user=UserResponse(
+            id=user.id,
+            email=user.email,
+            full_name=user.full_name,
+            company_name=user.company_name,
+            company_size=user.company_size,
+            is_active=user.is_active,
+            is_admin=user.is_admin,
+            created_at=user.created_at,
+            plan=user.plan,
+            analisis_realizados=user.analisis_realizados,
+            cuota_analisis=user.cuota_analisis,
+            credits=user.credits,
+            credits_expire_at=user.credits_expire_at,
+            has_valid_credits=user.has_valid_credits(),
+            spreadsheet_id=user.spreadsheet_id,
+            spreadsheet_url=user.spreadsheet_url,
+            invited_by=user.invited_by
+        )
     )
 
 
@@ -227,7 +281,25 @@ async def get_current_user_info(
     """
     Obtiene la información del usuario autenticado.
     """
-    return UserResponse.model_validate(current_user)
+    return UserResponse(
+        id=current_user.id,
+        email=current_user.email,
+        full_name=current_user.full_name,
+        company_name=current_user.company_name,
+        company_size=current_user.company_size,
+        is_active=current_user.is_active,
+        is_admin=current_user.is_admin,
+        created_at=current_user.created_at,
+        plan=current_user.plan,
+        analisis_realizados=current_user.analisis_realizados,
+        cuota_analisis=current_user.cuota_analisis,
+        credits=current_user.credits,
+        credits_expire_at=current_user.credits_expire_at,
+        has_valid_credits=current_user.has_valid_credits(),
+        spreadsheet_id=current_user.spreadsheet_id,
+        spreadsheet_url=current_user.spreadsheet_url,
+        invited_by=current_user.invited_by
+    )
 
 
 @router.get("/me/stats", response_model=UserStatsResponse)
@@ -293,7 +365,25 @@ async def refresh_token(
     return Token(
         access_token=access_token,
         token_type="bearer",
-        user=UserResponse.model_validate(current_user)
+        user=UserResponse(
+        id=current_user.id,
+        email=current_user.email,
+        full_name=current_user.full_name,
+        company_name=current_user.company_name,
+        company_size=current_user.company_size,
+        is_active=current_user.is_active,
+        is_admin=current_user.is_admin,
+        created_at=current_user.created_at,
+        plan=current_user.plan,
+        analisis_realizados=current_user.analisis_realizados,
+        cuota_analisis=current_user.cuota_analisis,
+        credits=current_user.credits,
+        credits_expire_at=current_user.credits_expire_at,
+        has_valid_credits=current_user.has_valid_credits(),
+        spreadsheet_id=current_user.spreadsheet_id,
+        spreadsheet_url=current_user.spreadsheet_url,
+        invited_by=current_user.invited_by
+    )
     )
 
 
