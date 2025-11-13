@@ -6,26 +6,42 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { authAPI } from '@/lib/api';
 import { authUtils } from '@/lib/auth';
-import { FileText, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { FileText, Loader2, CheckCircle2, AlertCircle, Building2 } from 'lucide-react';
+
+const COMPANY_SIZE_OPTIONS = [
+  { value: '1-5', label: '1-5 empleados' },
+  { value: '5-10', label: '5-10 empleados' },
+  { value: '10-30', label: '10-30 empleados' },
+  { value: '30-50', label: '30-50 empleados' },
+  { value: '50-100', label: '50-100 empleados' },
+  { value: '100+', label: 'Más de 100 empleados' },
+];
 
 export default function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const [invitationToken, setInvitationToken] = useState('');
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [companyName, setCompanyName] = useState('');
+  const [companySize, setCompanySize] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [tokenFromUrl, setTokenFromUrl] = useState(false);
 
-  // Capturar token del URL al cargar
   useEffect(() => {
     const token = searchParams.get('token');
     if (token) {
@@ -39,7 +55,6 @@ export default function RegisterForm() {
     e.preventDefault();
     setError('');
 
-    // Validaciones
     if (!invitationToken) {
       setError('Se requiere un código de invitación válido');
       return;
@@ -60,15 +75,21 @@ export default function RegisterForm() {
       return;
     }
 
+    if (!companySize) {
+      setError('Por favor selecciona el tamaño de tu empresa');
+      return;
+    }
+
     setLoading(true);
 
     try {
       console.log('📝 Registrando usuario:', email);
-      const response = await authAPI.register({ 
-        email, 
+      const response = await authAPI.register({
+        email,
         password,
         full_name: fullName,
         company_name: companyName || undefined,
+        company_size: companySize,
         invitation_token: invitationToken
       });
       console.log('✅ Registro exitoso');
@@ -79,8 +100,7 @@ export default function RegisterForm() {
       console.error('❌ Error de registro:', err);
       const errorMessage = err.response?.data?.detail || 'Error al crear la cuenta';
       setError(errorMessage);
-      
-      // Si el error es del token, permitir editarlo
+
       if (errorMessage.includes('token') || errorMessage.includes('invitación')) {
         setTokenFromUrl(false);
       }
@@ -100,7 +120,7 @@ export default function RegisterForm() {
           </div>
           <CardTitle className="text-2xl font-bold">Crear Cuenta</CardTitle>
           <CardDescription>
-            {tokenFromUrl 
+            {tokenFromUrl
               ? '¡Bienvenido! Completa tus datos para activar tu cuenta'
               : 'Necesitas un código de invitación para registrarte'
             }
@@ -128,7 +148,6 @@ export default function RegisterForm() {
               </div>
             )}
 
-            {/* Mostrar campo de token solo si no vino por URL o hubo error */}
             {!tokenFromUrl && (
               <div className="space-y-2">
                 <Label htmlFor="invitationToken">Código de Invitación *</Label>
@@ -187,6 +206,34 @@ export default function RegisterForm() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="companySize">
+                Tamaño de Empresa *
+              </Label>
+              <Select
+                value={companySize}
+                onValueChange={setCompanySize}
+                disabled={loading}
+              >
+                <SelectTrigger id="companySize">
+                  <SelectValue placeholder="Selecciona el número de empleados" />
+                </SelectTrigger>
+                <SelectContent>
+                  {COMPANY_SIZE_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4 text-muted-foreground" />
+                        {option.label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500">
+                Esta información nos ayuda a personalizar tu experiencia
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="password">Contraseña *</Label>
               <Input
                 id="password"
@@ -219,7 +266,7 @@ export default function RegisterForm() {
                 <div className="text-sm text-blue-900">
                   <p className="font-medium">Tu plan incluye:</p>
                   <ul className="mt-1 space-y-1 text-xs">
-                    <li>✓ 30 análisis mensuales</li>
+                    <li>✓ Créditos de bienvenida</li>
                     <li>✓ Exportación a Excel/CSV</li>
                     <li>✓ Todas las funciones básicas</li>
                   </ul>
