@@ -93,6 +93,10 @@ class User(Base):
         """
         Agrega créditos al usuario con fecha de expiración.
         """
+         # Inicializar credits si es None
+        if self.credits is None:
+            self.credits = 0
+
         self.credits += amount
         # Extender la fecha de expiración o crear una nueva
         if self.credits_expire_at and self.credits_expire_at > datetime.utcnow():
