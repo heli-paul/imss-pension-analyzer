@@ -51,6 +51,8 @@ class InvitationResponse(BaseModel):
     created_by: int
     notes: Optional[str] = None
     invitation_url: Optional[str] = None
+    initial_credits: int
+    credits_valid_days: int
     
     class Config:
         from_attributes = True
