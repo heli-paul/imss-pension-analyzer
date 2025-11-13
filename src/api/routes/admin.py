@@ -333,7 +333,20 @@ async def list_users(
     query = query.order_by(User.created_at.desc())
     
     users = query.offset(skip).limit(limit).all()
-    return users
+    return [UserListResponse(
+        id=u.id,
+        email=u.email,
+        full_name=u.full_name,
+        company_name=u.company_name,
+        company_size=u.company_size,
+        is_active=u.is_active,
+        created_at=u.created_at,
+        credits=u.credits,
+        credits_expire_at=u.credits_expire_at,
+        has_valid_credits=u.has_valid_credits(),
+        analisis_realizados=u.analisis_realizados,
+        plan=u.plan
+    ) for u in users]
 
 @router.post("/users/credits", status_code=status.HTTP_200_OK)
 async def add_credits_to_user(
