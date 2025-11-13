@@ -66,7 +66,8 @@ class InvitationService:
             token=token,
             status="pending",
             plan=data.plan,
-            cuota_analisis=data.cuota_analisis,
+            initial_credits=data.initial_credits,
+            credits_valid_days=data.credits_valid_days,
             expires_at=expires_at,
             created_by=admin_user_id,
             notes=data.notes,
@@ -209,7 +210,8 @@ class InvitationService:
             to_name=user_name,
             invitation_token=invitation.token,
             plan=invitation.plan,
-            cuota_analisis=invitation.cuota_analisis,
+            initial_credits=invitation.initial_credits,
+            credits_valid_days=invitation.credits_valid_days,
             admin_name=None
         )
         

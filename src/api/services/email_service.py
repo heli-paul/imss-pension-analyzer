@@ -35,7 +35,8 @@ class EmailService:
         to_name: str,
         invitation_token: str,
         plan: str,
-        cuota_analisis: int,
+        initial_credits: int,
+        credits_valid_days: int,
         admin_name: Optional[str] = None
     ) -> Tuple[bool, Optional[str]]:
         """
@@ -50,7 +51,8 @@ class EmailService:
             to_name=to_name,
             registration_url=registration_url,
             plan=plan,
-            cuota_analisis=cuota_analisis,
+            initial_credits=initial_credits,
+            credits_valid_days=credits_valid_days,
             admin_name=admin_name
         )
         
@@ -112,7 +114,8 @@ class EmailService:
         to_name: str,
         registration_url: str,
         plan: str,
-        cuota_analisis: int,
+        initial_credits: int,
+        credits_valid_days: int,
         admin_name: Optional[str] = None
     ) -> str:
         """
@@ -194,7 +197,8 @@ class EmailService:
         <div class="plan-info">
             <h3 style="margin-top: 0; color: #2563eb;">Tu Plan: {{ plan|upper }}</h3>
             <p style="margin-bottom: 0;">
-                ✅ <strong>{{ cuota_analisis }}</strong> análisis mensuales<br>
+                ✅ <strong>{{ initial_credits }}</strong> créditos para análisis<br>
+                ✅ Válidos por <strong>{{ credits_valid_days }}</strong> días<br>
                 ✅ Extracción automática de datos<br>
                 ✅ Exportación a Google Sheets
             </p>
