@@ -64,25 +64,29 @@ class AuthService:
         password: str,
         full_name: Optional[str],
         company_name: Optional[str],
+        company_size: Optional[str],  # NUEVO
         invitation_token: str,
         plan: str,
-        cuota_analisis: int
+        cuota_analisis: int,
+        initial_credits: int = 10,  # NUEVO
+        credits_valid_days: int = 30  # NUEVO
     ) -> Tuple[Optional[User], Optional[str]]:
         """
-        Registra un nuevo usuario usando una invitación.
+        Registra un nuevo usuario usando una invitación con sistema de créditos.
         """
         # Verificar si el usuario ya existe
         existing_user = self.get_user_by_email(email)
         if existing_user:
             return None, "El email ya está registrado"
-        
+
         # Crear usuario con datos de la invitación
         hashed_password = hash_password(password)
-        
+
         new_user = User(
             email=email,
             full_name=full_name,
-            # company_name=company_name,
+            company_name=company_name,
+            company_size=company_size,  # NUEVO
             hashed_password=hashed_password,
             plan=plan,
             cuota_analisis=cuota_analisis,
@@ -91,10 +95,13 @@ class AuthService:
             analisis_realizados=0
         )
         
+        # NUEVO: Agregar créditos iniciales
+        new_user.add_credits(initial_credits, credits_valid_days)
+
         self.db.add(new_user)
         self.db.commit()
         self.db.refresh(new_user)
-        
+
         return new_user, None
     
     def increment_usage(self, user: User) -> bool:
