@@ -88,7 +88,8 @@ class InvitationService:
             to_name=user_name,
             invitation_token=token,
             plan=data.plan,
-            cuota_analisis=data.cuota_analisis,
+            initial_credits=data.initial_credits,
+            credits_valid_days=data.credits_valid_days,
             admin_name=admin_name
         )
         
