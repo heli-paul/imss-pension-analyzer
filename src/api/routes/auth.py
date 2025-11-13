@@ -59,9 +59,6 @@ async def validate_invitation_token(
         company_size=user_data.company_size,
         initial_credits=invitation.initial_credits,
         credits_valid_days=invitation.credits_valid_days
-        initial_credits=invitation.initial_credits,
-        credits_valid_days=invitation.credits_valid_days,
-        expires_at=invitation.expires_at
     )
 
 
