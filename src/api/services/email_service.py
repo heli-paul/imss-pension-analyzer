@@ -15,20 +15,20 @@ class EmailService:
     """
     Servicio para envío de emails con SendGrid.
     """
-    
+
     def __init__(self):
         settings = get_settings()
         self.api_key = settings.SENDGRID_API_KEY
         self.from_email = settings.SENDGRID_FROM_EMAIL
         self.from_name = settings.SENDGRID_FROM_NAME
         self.frontend_url = settings.FRONTEND_URL
-        
+
         if self.api_key:
             self.client = SendGridAPIClient(self.api_key)
         else:
             self.client = None
             print("⚠️  ADVERTENCIA: SENDGRID_API_KEY no configurada.")
-    
+
     def send_invitation_email(
         self,
         to_email: str,
@@ -44,9 +44,9 @@ class EmailService:
         """
         if not self.client:
             return False, "SendGrid no está configurado"
-        
+
         registration_url = f"{self.frontend_url}/invite?token={invitation_token}"
-        
+
         html_content = self._render_invitation_template(
             to_name=to_name,
             registration_url=registration_url,
@@ -55,25 +55,25 @@ class EmailService:
             credits_valid_days=credits_valid_days,
             admin_name=admin_name
         )
-        
+
         message = Mail(
             from_email=Email(self.from_email, self.from_name),
             to_emails=To(to_email, to_name),
             subject="🎉 Has sido invitado a Pensionasoft - Análisis de Constancias IMSS",
             html_content=Content("text/html", html_content)
         )
-        
+
         try:
             response = self.client.send(message)
-            
+
             if response.status_code in [200, 201, 202]:
                 return True, None
             else:
                 return False, f"SendGrid respondió con código {response.status_code}"
-                
+
         except Exception as e:
             return False, f"Error al enviar email: {str(e)}"
-    
+
     def send_welcome_email(
         self,
         to_email: str,
@@ -85,30 +85,30 @@ class EmailService:
         """
         if not self.client:
             return False, "SendGrid no está configurado"
-        
+
         html_content = self._render_welcome_template(
             to_name=to_name,
             plan=plan
         )
-        
+
         message = Mail(
             from_email=Email(self.from_email, self.from_name),
             to_emails=To(to_email, to_name),
             subject="✅ ¡Bienvenido a Pensionasoft!",
             html_content=Content("text/html", html_content)
         )
-        
+
         try:
             response = self.client.send(message)
-            
+
             if response.status_code in [200, 201, 202]:
                 return True, None
             else:
                 return False, f"SendGrid respondió con código {response.status_code}"
-                
+
         except Exception as e:
             return False, f"Error al enviar email: {str(e)}"
-    
+
     def _render_invitation_template(
         self,
         to_name: str,
@@ -185,15 +185,15 @@ class EmailService:
             <h1>📊 Pensionasoft</h1>
             <p style="color: #666;">Análisis de Constancias IMSS</p>
         </div>
-        
+
         <h2>¡Hola {{ to_name }}! 👋</h2>
-        
+
         {% if admin_name %}
         <p><strong>{{ admin_name }}</strong> te ha invitado a Pensionasoft.</p>
         {% else %}
         <p>Has sido invitado a Pensionasoft.</p>
         {% endif %}
-        
+
         <div class="plan-info">
             <h3 style="margin-top: 0; color: #2563eb;">Tu Plan: {{ plan|upper }}</h3>
             <p style="margin-bottom: 0;">
@@ -203,23 +203,23 @@ class EmailService:
                 ✅ Exportación a Google Sheets
             </p>
         </div>
-        
+
         <p>Para completar tu registro, haz clic aquí:</p>
-        
+
         <div style="text-align: center;">
             <a href="{{ registration_url }}" class="button">
                 Completar Registro
             </a>
         </div>
-        
+
         <p style="font-size: 14px; color: #666;">
             O copia este enlace: {{ registration_url }}
         </p>
-        
+
         <p style="font-size: 14px; color: #666;">
             ⏰ Este enlace expira en 7 días.
         </p>
-        
+
         <div class="footer">
             <p><strong>Pensionasoft</strong></p>
             <p style="font-size: 12px;">Si no solicitaste esta invitación, ignora este correo.</p>
@@ -228,16 +228,17 @@ class EmailService:
 </body>
 </html>
         """
-        
+
         template = Template(template_str)
         return template.render(
             to_name=to_name,
             registration_url=registration_url,
             plan=plan,
-            cuota_analisis=cuota_analisis,
+            initial_credits=initial_credits,
+            credits_valid_days=credits_valid_days,
             admin_name=admin_name
         )
-    
+
     def _render_welcome_template(self, to_name: str, plan: str) -> str:
         """
         Renderiza el template HTML de bienvenida.
@@ -278,9 +279,9 @@ class EmailService:
     <div class="container">
         <h1 style="color: #2563eb;">📊 Pensionasoft</h1>
         <h2>¡Bienvenido {{ to_name }}! 🎉</h2>
-        
+
         <p>Tu cuenta ha sido creada exitosamente.</p>
-        
+
         <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h3 style="margin-top: 0; color: #2563eb;">Primeros pasos:</h3>
             <ol>
@@ -289,13 +290,13 @@ class EmailService:
                 <li><strong>Exporta a Google Sheets</strong></li>
             </ol>
         </div>
-        
+
         <div style="text-align: center;">
             <a href="{{ frontend_url }}/upload" class="button">
                 Comenzar Ahora
             </a>
         </div>
-        
+
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
             <p style="color: #666; font-size: 14px;"><strong>Pensionasoft</strong><br>contacto@pensionasoft.com</p>
         </div>
@@ -303,7 +304,7 @@ class EmailService:
 </body>
 </html>
         """
-        
+
         template = Template(template_str)
         return template.render(
             to_name=to_name,
