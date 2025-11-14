@@ -299,6 +299,7 @@ export default function AdminPage() {
                     <TableRow>
                       <TableHead>Email</TableHead>
                       <TableHead>Créditos</TableHead>
+                      <TableHead>Créditos Usados</TableHead>
                       <TableHead>Tamaño Empresa</TableHead>
                       <TableHead>Expiración</TableHead>
                       <TableHead>Registro</TableHead>
@@ -321,19 +322,30 @@ export default function AdminPage() {
                               {user.credits}
                             </span>
                           </TableCell>
+                          <TableCell>
+                            <span className="text-gray-600">
+                              {user.analisis_realizados || 0}
+                            </span>
+                          </TableCell>
                           <TableCell>{user.company_size || 'No especificado'}</TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {user.credits_expire_at
-                              ? formatDistanceToNow(new Date(user.credits_expire_at), {
-                                  addSuffix: true,
-                                  locale: es
+                              ? new Date(user.credits_expire_at).toLocaleString('es-MX', {
+                                  year: 'numeric',
+                                  month: '2-digit',
+                                  day: '2-digit',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
                                 })
                               : 'Sin expiración'}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
-                            {formatDistanceToNow(new Date(user.created_at), {
-                              addSuffix: true,
-                              locale: es
+                            {new Date(user.created_at).toLocaleString('es-MX', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
                             })}
                           </TableCell>
                           <TableCell className="text-right">
@@ -501,11 +513,14 @@ export default function AdminPage() {
                               </span>
                             </TableCell>
                             <TableCell className="text-sm text-muted-foreground">
-                              {formatDistanceToNow(new Date(invitation.created_at), {
-                                addSuffix: true,
-                                locale: es
+                              {new Date(invitation.created_at).toLocaleString('es-MX', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit'
                               })}
-                            </TableCell>
+                            </TableCell> 
                             <TableCell className="text-right">
                               <div className="flex items-center justify-end gap-2">
                                 {invitation.status === "pending" && (
