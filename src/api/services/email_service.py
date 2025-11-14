@@ -169,6 +169,44 @@ class EmailService:
             margin: 20px 0;
             border-radius: 5px;
         }
+        .features {
+            background-color: #f9fafb;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .features h3 {
+            margin-top: 0;
+            color: #2563eb;
+            font-size: 18px;
+        }
+        .features ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .features li {
+            margin: 8px 0;
+        }
+        .future-features {
+            background-color: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .support {
+            background-color: #dcfce7;
+            border-left: 4px solid #16a34a;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .support a {
+            color: #16a34a;
+            font-weight: bold;
+            text-decoration: none;
+        }
         .footer {
             text-align: center;
             color: #666;
@@ -183,7 +221,7 @@ class EmailService:
     <div class="container">
         <div class="logo">
             <h1>📊 Pensionasoft</h1>
-            <p style="color: #666;">Análisis de Constancias IMSS</p>
+            <p style="color: #666;">Automatización de Análisis de Pensiones IMSS</p>
         </div>
 
         <h2>¡Hola {{ to_name }}! 👋</h2>
@@ -195,30 +233,58 @@ class EmailService:
         {% endif %}
 
         <div class="plan-info">
-            <h3 style="margin-top: 0; color: #2563eb;">Tu Plan: {{ plan|upper }}</h3>
+            <h3 style="margin-top: 0; color: #2563eb;">Tu Cuenta Incluye:</h3>
             <p style="margin-bottom: 0;">
                 ✅ <strong>{{ initial_credits }}</strong> créditos para análisis<br>
-                ✅ Válidos por <strong>{{ credits_valid_days }}</strong> días<br>
-                ✅ Extracción automática de datos<br>
-                ✅ Exportación a Google Sheets
+                ✅ Válidos por <strong>{{ credits_valid_days }}</strong> días
             </p>
         </div>
 
-        <p>Para completar tu registro, haz clic aquí:</p>
+        <div class="features">
+            <h3>🚀 ¿Qué puedes hacer con Pensionasoft?</h3>
+            <ul style="list-style: none; padding-left: 0;">
+                <li>✓ <strong>Automatiza tus proyecciones de pensión</strong> - Obtén resultados precisos en segundos</li>
+                <li>✓ <strong>Salario promedio de últimas 250 semanas (Ley 73)</strong> - Cálculo exacto y automatizado</li>
+                <li>✓ <strong>Conservación de derechos (Ley 73)</strong> - Conoce las fechas exactas de vigencia</li>
+                <li>✓ <strong>Exportación automática a Excel</strong> - Integra los datos directamente a tus hojas de cálculo</li>
+                <li>✓ <strong>Historial laboral completo</strong> - Análisis detallado de semanas cotizadas</li>
+            </ul>
+        </div>
+
+        <div class="future-features">
+            <h4 style="margin-top: 0; color: #d97706;">🔮 Próximamente:</h4>
+            <p style="font-size: 14px; margin: 5px 0;">
+                • Cálculos de pensión para Ley 97<br>
+                • Cálculo automático de pagos retroactivos<br>
+                • Análisis de capacidad de pago del cliente<br>
+                • Integración con CRM para gestión de prospectos<br>
+                • Seguimiento puntual de cada consulta
+            </p>
+        </div>
+
+        <p style="font-weight: 500; margin: 25px 0 15px 0;">Para completar tu registro, haz clic aquí:</p>
 
         <div style="text-align: center;">
             <a href="{{ registration_url }}" class="button">
-                Completar Registro
+                Activar Mi Cuenta Ahora
             </a>
         </div>
 
-        <p style="font-size: 14px; color: #666;">
-            O copia este enlace: {{ registration_url }}
+        <p style="font-size: 14px; color: #666; text-align: center;">
+            O copia este enlace: <br>
+            <span style="word-break: break-all;">{{ registration_url }}</span>
         </p>
 
-        <p style="font-size: 14px; color: #666;">
+        <p style="font-size: 14px; color: #666; text-align: center;">
             ⏰ Este enlace expira en 7 días.
         </p>
+
+        <div class="support">
+            <p style="margin: 5px 0;">
+                <strong>¿Dudas con tu registro?</strong><br>
+                Contáctanos por WhatsApp: <a href="https://wa.me/525512411511">55 1241 1511</a>
+            </p>
+        </div>
 
         <div class="footer">
             <p><strong>Pensionasoft</strong></p>
