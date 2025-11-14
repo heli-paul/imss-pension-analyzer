@@ -7,13 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table';
 import {
   Dialog,
@@ -25,18 +25,16 @@ import {
 } from '@/components/ui/dialog';
 import { User, Invitation } from '@/types';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Users, 
-  CreditCard, 
-  Mail, 
-  TrendingUp, 
+import {
+  Users,
+  CreditCard,
+  Mail,
+  TrendingUp,
   Plus,
   Loader2,
   CheckCircle2,
   AlertCircle
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://imss-pension-api.onrender.com';
 
@@ -53,6 +51,16 @@ interface AddCreditsForm {
   credits: number;
   days: number;
 }
+
+// Función helper para calcular días hasta expiración
+const getDaysUntilExpiration = (expirationDate: string | null): number | null => {
+  if (!expirationDate) return null;
+  const now = new Date();
+  const expiration = new Date(expirationDate);
+  const diffTime = expiration.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
+};
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -231,6 +239,31 @@ export default function AdminPage() {
         </Alert>
       )}
 
+      {/* Banner de alertas de usuarios */}
+      {users.filter(u => u.credits < 10 && u.credits > 0).length > 0 && (
+        <Alert className="mb-6 border-orange-500 bg-orange-50">
+          <AlertCircle className="h-4 w-4 text-orange-600" />
+          <AlertDescription className="text-orange-900">
+            <strong>{users.filter(u => u.credits < 10 && u.credits > 0).length} usuario(s)</strong> tienen menos de 10 créditos
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {users.filter(u => {
+        const days = getDaysUntilExpiration(u.credits_expire_at);
+        return days !== null && days <= 7 && days > 0;
+      }).length > 0 && (
+        <Alert className="mb-6 border-yellow-500 bg-yellow-50">
+          <AlertCircle className="h-4 w-4 text-yellow-600" />
+          <AlertDescription className="text-yellow-900">
+            <strong>{users.filter(u => {
+              const days = getDaysUntilExpiration(u.credits_expire_at);
+              return days !== null && days <= 7 && days > 0;
+            }).length} usuario(s)</strong> tienen créditos que expiran en menos de 7 días
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
@@ -309,7 +342,7 @@ export default function AdminPage() {
                   <TableBody>
                     {users.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center text-muted-foreground">
+                        <TableCell colSpan={7} className="text-center text-muted-foreground">
                           No hay usuarios registrados
                         </TableCell>
                       </TableRow>
@@ -318,9 +351,21 @@ export default function AdminPage() {
                         <TableRow key={user.id}>
                           <TableCell className="font-medium">{user.email}</TableCell>
                           <TableCell>
-                            <span className={`font-semibold ${user.credits > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {user.credits}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className={`font-semibold ${user.credits > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {user.credits}
+                              </span>
+                              {user.credits < 10 && user.credits > 0 && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                  ⚠️ Bajos
+                                </span>
+                              )}
+                              {user.credits === 0 && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                  🚫 Agotados
+                                </span>
+                              )}
+                            </div>
                           </TableCell>
                           <TableCell>
                             <span className="text-gray-600">
@@ -328,16 +373,40 @@ export default function AdminPage() {
                             </span>
                           </TableCell>
                           <TableCell>{user.company_size || 'No especificado'}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {user.credits_expire_at
-                              ? new Date(user.credits_expire_at).toLocaleString('es-MX', {
-                                  year: 'numeric',
-                                  month: '2-digit',
-                                  day: '2-digit',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })
-                              : 'Sin expiración'}
+                          <TableCell className="text-sm">
+                            {user.credits_expire_at ? (
+                              (() => {
+                                const daysUntilExpiration = getDaysUntilExpiration(user.credits_expire_at);
+                                const isExpiringSoon = daysUntilExpiration !== null && daysUntilExpiration <= 7 && daysUntilExpiration > 0;
+                                const isExpired = daysUntilExpiration !== null && daysUntilExpiration <= 0;
+                                
+                                return (
+                                  <div className="flex items-center gap-2">
+                                    <span className={`${isExpiringSoon || isExpired ? 'text-orange-600 font-medium' : 'text-muted-foreground'}`}>
+                                      {new Date(user.credits_expire_at).toLocaleString('es-MX', {
+                                        year: 'numeric',
+                                        month: '2-digit',
+                                        day: '2-digit',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </span>
+                                    {isExpiringSoon && (
+                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        ⏰ {daysUntilExpiration} {daysUntilExpiration === 1 ? 'día' : 'días'}
+                                      </span>
+                                    )}
+                                    {isExpired && (
+                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        ❌ Expirado
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })()
+                            ) : (
+                              <span className="text-muted-foreground">Sin expiración</span>
+                            )}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {new Date(user.created_at).toLocaleString('es-MX', {
@@ -396,9 +465,9 @@ export default function AdminPage() {
                       min="1"
                       max="1000"
                       value={inviteForm.initial_credits}
-                      onChange={(e) => setInviteForm({ 
-                        ...inviteForm, 
-                        initial_credits: parseInt(e.target.value) 
+                      onChange={(e) => setInviteForm({
+                        ...inviteForm,
+                        initial_credits: parseInt(e.target.value)
                       })}
                       required
                     />
@@ -415,9 +484,9 @@ export default function AdminPage() {
                       min="1"
                       max="365"
                       value={inviteForm.credits_valid_days}
-                      onChange={(e) => setInviteForm({ 
-                        ...inviteForm, 
-                        credits_valid_days: parseInt(e.target.value) 
+                      onChange={(e) => setInviteForm({
+                        ...inviteForm,
+                        credits_valid_days: parseInt(e.target.value)
                       })}
                       required
                     />
@@ -468,8 +537,8 @@ export default function AdminPage() {
                       </TableRow>
                     ) : (
                       invitations.map((invitation) => {
-                        const invitationUrl = `${window.location.origin}/register?token=${invitation.invitation_token}`;                     
-                        
+                        const invitationUrl = `${window.location.origin}/register?token=${invitation.invitation_token}`;
+
                         const copyLink = () => {
                           navigator.clipboard.writeText(invitationUrl);
                           setSuccess('Link copiado al portapapeles');
@@ -485,7 +554,7 @@ export default function AdminPage() {
                                 'Authorization': `Bearer ${Cookies.get('token') || localStorage.getItem('token')}`
                               }
                             });
-                            
+
                             if (response.ok) {
                               setSuccess(`Email reenviado a ${invitation.email}`);
                             } else {
@@ -520,7 +589,7 @@ export default function AdminPage() {
                                 hour: '2-digit',
                                 minute: '2-digit'
                               })}
-                            </TableCell> 
+                            </TableCell>
                             <TableCell className="text-right">
                               <div className="flex items-center justify-end gap-2">
                                 {invitation.status === "pending" && (
@@ -633,3 +702,5 @@ export default function AdminPage() {
     </div>
   );
 }
+
+
