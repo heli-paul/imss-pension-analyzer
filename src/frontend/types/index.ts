@@ -96,3 +96,4 @@ export interface Invitation {
   expires_at: string;
   used_at?: string;
 }
+
