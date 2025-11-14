@@ -65,7 +65,7 @@ class UserResponse(UserBase):
     # NUEVO: Sistema de créditos
     credits: int
     credits_expire_at: Optional[datetime] = None
-    has_valid_credits: bool
+    has_valid_credits: bool = False
     
     # Google Sheets
     spreadsheet_id: Optional[str] = None

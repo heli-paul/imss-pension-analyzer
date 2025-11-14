@@ -26,6 +26,7 @@ export interface RegisterData {
   password: string;
   full_name: string;
   company_name?: string;
+  company_size?: string;
   invitation_token: string;
 }
 
