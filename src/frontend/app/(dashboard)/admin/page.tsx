@@ -23,6 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { User, Invitation } from '@/types';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Users, 
