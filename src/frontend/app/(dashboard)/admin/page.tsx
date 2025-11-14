@@ -356,7 +356,7 @@ export default function AdminPage() {
                             })}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button size="sm" variant="outline" onClick={() => openAddCreditsDialog(user)}>
+                            <Button className="h-9 px-3" variant="outline" onClick={() => openAddCreditsDialog(user)}>
                               <Plus className="h-4 w-4 mr-1" />
                               Agregar Créditos
                             </Button>
@@ -530,7 +530,7 @@ export default function AdminPage() {
                                 {invitation.status === "pending" && (
                                   <>
                                     <Button
-                                      size="sm"
+                                      className="h-9 px-3"
                                       variant="outline"
                                       onClick={copyLink}
                                       title="Copiar link de invitación"
@@ -538,7 +538,7 @@ export default function AdminPage() {
                                       📋
                                     </Button>
                                     <Button
-                                      size="sm"
+                                      className="h-9 px-3"
                                       variant="outline"
                                       onClick={resendEmail}
                                       disabled={loading}
