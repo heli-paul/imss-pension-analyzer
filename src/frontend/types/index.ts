@@ -2,12 +2,15 @@
 export interface User {
   id: number;
   email: string;
-  full_name: string;
+  full_name?: string;
   company_name?: string;
-  plan: 'free' | 'premium' | 'admin';
-  analisis_realizados: number;
-  cuota_analisis: number;
+  company_size?: string | null;
+  plan?: 'free' | 'premium' | 'admin';
+  analisis_realizados?: number;
+  credits: number;
+  credits_expire_at: string | null;
   created_at: string;
+  is_active?: boolean;
 }
 
 export interface AuthResponse {
