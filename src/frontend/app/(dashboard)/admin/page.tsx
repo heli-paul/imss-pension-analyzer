@@ -47,26 +47,6 @@ interface DashboardStats {
   pending_invitations: number;
 }
 
-interface User {
-  id: number;
-  email: string;
-  credits: number;
-  credits_expire_at: string | null;
-  company_size: string | null;
-  created_at: string;
-  is_active: boolean;
-}
-
-interface Invitation {
-  id: number;
-  email: string;
-  token: string;
-  initial_credits: number;
-  credits_valid_days: number;
-  used: boolean;
-  created_at: string;
-}
-
 interface AddCreditsForm {
   userId: number;
   userEmail: string;
