@@ -456,7 +456,7 @@ export default function AdminPage() {
                       </TableRow>
                     ) : (
                       invitations.map((invitation) => {
-                        const invitationUrl = `${window.location.origin}/register?token=${invitation.token}`;
+                        const invitationUrl = `${window.location.origin}/register?token=${invitation.invitation_token}`;                     
                         
                         const copyLink = () => {
                           navigator.clipboard.writeText(invitationUrl);
