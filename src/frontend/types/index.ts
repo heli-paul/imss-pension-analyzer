@@ -82,3 +82,17 @@ export interface DashboardStats {
   analyses_limit: number;
   recent_analyses: AnalysisResult[];
 }
+
+export interface Invitation {
+  id: number;
+  email: string;
+  name: string;
+  plan: string;
+  initial_credits: number;
+  credits_valid_days: number;
+  invitation_token: string;
+  status: string;
+  created_at: string;
+  expires_at: string;
+  used_at?: string;
+}
